@@ -31,7 +31,7 @@
 
 #include <IOexpander.h>
 #include <Wire.h>
-#include "WProgram.h"
+#include "Arduino.h"
 
 
 // Constructors ////////////////////////////////////////////////////////////////
