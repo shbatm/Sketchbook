@@ -64,6 +64,7 @@ void setup(){
 //    lcd.write(smiley[i]);
 //  }
 }
+boolean state = 1;
 void loop(){
   for(int c = 0;c<31;c++){
     lcd.setContrast(c);
@@ -73,4 +74,5 @@ void loop(){
     lcd.setContrast(c);
     delay(15);
   }
+  lcd.inverse(state = !state);
 }
