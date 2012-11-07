@@ -219,7 +219,7 @@ void lcdInit() {
   //the following actions are performed to init the lcd
   writeCMDdisplay(0xe2);                                //reset display by soft
   delay(1000);
-  writeCMDdisplay(0xa1);                                //ADC select
+  //writeCMDdisplay(0xa1);                                //ADC select
   writeCMDdisplay(0xa2);                                //lcd bias 1/8
   writeCMDdisplay(0x2c);                                //power
   writeCMDdisplay(0x2e);                                //power
