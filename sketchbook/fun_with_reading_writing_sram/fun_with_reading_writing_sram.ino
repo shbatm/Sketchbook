@@ -1,9 +1,10 @@
 #include <Xmem.h>
-#include <random.h>
+#include <TrueRandom.h>
 
 int index = 0;
 
-Xmem Xmem(11,13,12);
+//latch, clock, data
+Xmem Xmem(10,12,11);
 
 void setup(){
   Serial.begin(115200);
@@ -11,8 +12,8 @@ void setup(){
   int procent = 0;
   Serial.println("Writing: ");
   for(i=0;i<36767;i++){
-    Xmem.writeXramAddress(random(0,i),i);
-    if(i%400==0){
+    Xmem.write('0',i);
+    if(i%(36767/100)==0){
       procent++;
       Serial.print(" ");
       Serial.print(i*100/36767);
@@ -23,14 +24,15 @@ void setup(){
     }
   }
   Serial.println("Done");
+  delay(2000);
   i = 0;
   while(i<36767){
-    char data = Xmem.readXramAddress(i);
-    if(i%160==0){
-      Serial.println(data);
+    char data = Xmem.read(i);
+    if(i%100==0){
+      Serial.println(char(data));
     }
     else{
-      Serial.print(data);
+      Serial.print(char(data));
     }
     i++;
   }
@@ -40,9 +42,9 @@ void setup(){
 void loop(){
   if(Serial.available()>0){
     while(Serial.available()){
-      Xmem.writeXramAddress(Serial.read(),index++);
-      Serial.print((char)Xmem.readXramAddress(index-1));
-      Xmem.writeXramAddress('\0',index);
+      Xmem.write(Serial.read(),index++);
+      Serial.print((char)Xmem.read(index-1));
+      Xmem.write('\0',index);
     }
   }
 }

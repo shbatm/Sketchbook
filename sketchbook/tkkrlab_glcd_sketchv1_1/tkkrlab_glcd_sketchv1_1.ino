@@ -2,7 +2,7 @@
 SED1531 lcd;
  
 void setup(){
-  //Serial.begin(115200);
+  Serial.begin(115200);
   lcd.begin();
   lcd.setCursor(0);
   lcd.setContrast(16);
