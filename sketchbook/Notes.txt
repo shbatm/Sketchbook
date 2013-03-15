@@ -1,0 +1,3 @@
+The included libraries are needed for either a hackvision or a classic controller(Its a video game shield library)
+For more information on button setups or connecting a classic controller see the product links on
+google code.
