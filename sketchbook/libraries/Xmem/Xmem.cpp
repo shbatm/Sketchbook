@@ -3,12 +3,12 @@
 #include "Arduino.h"
  
  
-#define CLEAROUTPUTENABLE (PORTC &= ~0x10)
-#define SETOUTPUTENABLE   (PORTC |= 0x10)
-#define CLEARWRITEENABLE  (PORTC &= ~0x20)
-#define SETWRITEENABLE    (PORTC |= 0x20)
-#define SETWRITEENABLEOUTPUT (DDRC |= 0x10)
-#define SETOUTPUTENABLEOUTPUT (DDRC |= 0x20)
+#define CLEAROUTPUTENABLE 		(PORTC &= ~0x10)
+#define SETOUTPUTENABLE   		(PORTC |= 0x10)
+#define CLEARWRITEENABLE  		(PORTC &= ~0x20)
+#define SETWRITEENABLE    		(PORTC |= 0x20)
+#define SETWRITEENABLEOUTPUT 	(DDRC |= 0x10)
+#define SETOUTPUTENABLEOUTPUT 	(DDRC |= 0x20)
  
 //Constructor.
 Xmem::Xmem(int latchpin, int clockpin, int datapin){//, int outputEnable, int writeEnable){

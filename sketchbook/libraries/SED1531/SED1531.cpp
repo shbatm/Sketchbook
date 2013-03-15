@@ -1,9 +1,18 @@
 /* 
+ * 
  * ---- 30/1/2013
  * 		modified begin();
  * 		to be more true to the original sketch this is  based on.
  * 		http://tkkrlab.nl/wiki/Glcd_48x100
  * 		0xe2 does not reset the display don't know why.
+ * 
+ * ---- 15/2/2013
+ * 		fixed an issue related to setCursor();
+ * 		which caused text to appear to roll accross the screen
+ * 		note:
+ * 		lines longer then 20 chars will display text on display
+ * 		on lines it isn't supposed to go.
+ * 
  * */
 
 #include <SED1531.h>
@@ -114,8 +123,9 @@ int lcdRW = 11;
 int lcdEnable = 10;
 int lcdDataPins[] = {9,8,7,6,5,4,3,2};
 
+/*needed variables to keep track where we are on the screen*/
 int currentLine = 0;
-int charNum = 0;
+int charPos = 0;
 
 void SED1531::begin(){
 	pinMode(lcdA0, OUTPUT);
@@ -181,13 +191,15 @@ void SED1531::setMarker(byte marker, boolean on){
 	}
 
 void SED1531::setCursor(byte row){
+	home();
 	byte page = 0xb0+(row);
 	writecommand(page);
 	writecommand(0x08);
 	writecommand(0x00);
-	writecommand(page);
-	writecommand(0x08);
-	writecommand(0x00);
+	}
+
+void SED1531::home(){
+	charPos = 0;
 	}
 
 void SED1531::writecommand(byte cmd){
@@ -203,31 +215,16 @@ void SED1531::writecommand(byte cmd){
 	}
 
 	digitalWrite(lcdEnable, HIGH);
-	delayMicroseconds(10);
+	delayMicroseconds(20);
 	digitalWrite(lcdEnable, LOW);
-	delayMicroseconds(10);
+	delayMicroseconds(20);
 	digitalWrite(lcdEnable, HIGH);
 	}
 
 inline size_t SED1531::write(byte lcdData){
 	digitalWrite(lcdRW, LOW);
 	digitalWrite(lcdA0, HIGH);
-	
-	if(lcdData == '\n'|| charNum==19){
-		charNum = 0;
-		currentLine++;
-		if(currentLine==6){
-			currentLine = 0;
-			setCursor(currentLine);
-			}
-		else{
-			setCursor(currentLine);
-			}
-		}
-	else if(isprint(lcdData)){
-		charNum++;
-		//Serial.print("currentLine number: ");
-		//Serial.println(currentLine);
+	if(isprint(lcdData)){
 		byte character = lcdData - 32;
 		for(int col = 0;col<5;col++){
 			byte data = lcdFonts[character][col];
@@ -235,16 +232,14 @@ inline size_t SED1531::write(byte lcdData){
 				byte value = data & 0x01;
 				digitalWrite(lcdDataPins[bit], value);
 				data = data >> 1;
-				//Serial.print(data);
 				}
-				//Serial.println(" ");
 			digitalWrite(lcdEnable, HIGH);
 			delayMicroseconds(10);
 			digitalWrite(lcdEnable, LOW);
 			delayMicroseconds(10);
 			digitalWrite(lcdEnable, HIGH);
 			}
-		}
+		}		
 	}
 
 void SED1531::writePixData(byte lcdData){
