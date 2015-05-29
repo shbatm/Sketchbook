@@ -1,35 +1,36 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include <stdio.h>
+#include <Arduino.h>
+extern "C" 
+{
+  #include "ets_sys.h"
+  #include "osapi.h"
+  #include "os_type.h"
+  #include "user_interface.h"
+  #include "espconn.h"
+  #include "mem.h"
+  #include "gpio.h"
+  #include "user_config.h"
+}
+
+#include <assert.h>
 
 struct _node
 {
-  int x;
+  int value;
   struct _node *next;
 };
 
-typedef struct _node* Node_t;
+typedef struct _node Node_t;
 
-// create a single node to start the list with
-Node_t createNode();
+Node_t *createNode();
 
-// create a list with n nodes.
-Node_t createNode(unsigned int len);
+Node_t *createNode(int);
 
-// delete node or list of nodes.
-void deleteNode(Node_t node);
+void deleteNode(Node_t **);
+unsigned int nodeLength(Node_t *);
 
-// append a node to the end of the list.
-void appendNode(Node_t list, Node_t item);
-
-// count number of nodes in list.
-unsigned int listLen(Node_t list);
-
-// pop item from list and return item. sets last item pointer to null
-Node_t pop(Node_t list);
-
-// pushes item to list. 
-Node_t push(Node_t list, Node_t item);
+void for_item_do(Node_t *, void(*)(Node_t *));
 
 #endif

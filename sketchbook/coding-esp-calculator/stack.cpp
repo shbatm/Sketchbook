@@ -1,53 +1,72 @@
 #include "stack.h"
 
-// create a single node to start the list with
-Node_t createNode()
+Node_t *createNode()
 {
-  Node_t root = (Node_t)new(Node_t);
+  // function to create a new node.
+  Node_t *root = (Node_t *)os_malloc(sizeof(Node_t));
   root->next = NULL;
   return root;
 }
 
-// create a list with n nodes.
-Node_t createNode(unsigned int len)
+Node_t *createNode(int amount)
 {
-  Node_t root = createNode();
-  Node_t nodes = root;
-  int i;
-  // len-1 because we already initialized a root node.
-  for(i = 0;i < (len-1); i++)
+  // function to create multiple nodes in a list like structure.
+  Node_t *root = createNode();
+  Node_t *head = root;
+  for(int i = 0; i < (amount - 1);i++)
   {
-    nodes->next = createNode();
-    nodes = nodes->next;
+    head->next = createNode();
+    head = head->next;
   }
+  head->next = NULL;
   return root;
 }
 
-
-
-// append a node to the end of the list.
-void appendNode(Node_t list, Node_t item)
+void deleteNode(Node_t **root)
 {
-  //keep a copy of the first node.
-  Node_t node = list;
-  //go to the last one
-  while(node->next != NULL)
+  //if next node == NULL it's not a list.
+  if((*root)->next == NULL)
   {
-    node = node->next;
+    // and free a single node.
+    os_free(*root);  
+    *root = NULL;
   }
-  node->next = item;
-  item->next = NULL;
+  else
+  {
+    // else we loop over the list. going to the next.
+    // and freeing the previous one.
+    Node_t **temp = NULL;
+    while((*root) != NULL)
+    {
+      temp = root;
+      *root = (*root)->next;
+      os_free(*temp);
+    }
+    *temp = NULL;
+    *root = NULL;
+  }
 }
 
-// count the number of nodes in a list.
-unsigned int listLen(Node_t list)
+unsigned int nodeLength(Node_t *node)
 {
-  unsigned int len = 0;
-  Node_t head = list;
-  while(head != NULL)
+  // counts the number of nodes in a list.
+  int i = 0;
+  Node_t *root = node;
+  while(root != NULL)
   {
-    len++;
-    head = head->next;
+    i++;
+    root = root->next;
   }
-  return len;
+  return i;
+}
+
+void for_item_do(Node_t *root, void(*func)(Node_t *))
+{
+  // goes over every node,
+  // and passes that to a function handler.
+  int i = 0;
+  for(Node_t *head = root;head != NULL; head = head->next)
+  {
+    func(head);
+  }
 }
