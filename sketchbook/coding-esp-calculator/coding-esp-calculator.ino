@@ -16,12 +16,13 @@ char mathops[] =
 
 #define NUMMATHOPS (sizeof(mathops) * sizeof(char))
 
-Node_t *stack = NULL;
+Node_t *stack = createNode();
+Node_t *queue = createNode();
 
 void printStackItems(Node_t *item)
 {
   Serial.print(item->value);
-  Serial.print(' ');
+  Serial.print(':');
   if(item->next == NULL)
   {
     Serial.println();
@@ -36,6 +37,9 @@ void setup()
   lcd.home();
   lcd.clear();
   
+  stack->value = 0;
+  stack->type = NONE;
+  
   Serial.begin(115200);
   Serial.println();
   testingNodes();
@@ -43,6 +47,7 @@ void setup()
 
 void printStack(Node_t *stack)
 {
+  Serial.print("stack: ");
   for_item_do(stack, printStackItems);
 }
 
@@ -64,14 +69,21 @@ void parseSerialInput()
         tempnum[i] = inbyte;
         tempnum[++i] = '\0';
       }
-      Serial.print(strlen(tempnum));
-      Serial.print(":");
-      Serial.println(tempnum);
-
       uint32_t num = atol(tempnum);
-      Serial.print(sizeof num);
-      Serial.print(":");
-      Serial.println(num);
+      
+      if(stack->type == NONE)
+      {
+        stack->value = num;
+        stack->type = INT;
+      }
+      else
+      {
+        Node_t *number = createNode();
+        number->value = num;
+        number->type = INT;
+        push(stack, number);
+      }
+      
     }
     // check if incomming databyte is a letter
     if(isalpha(inbyte))
