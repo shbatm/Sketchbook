@@ -70,6 +70,30 @@ unsigned int nodeLength(Node_t *node)
   return i;
 }
 
+void push(Node_t *root, Node_t *node)
+{
+  appendNode(root, node);
+}
+
+Node_t *pop(Node_t *root)
+{
+  // this one is tricky
+  Node_t *node = NULL;
+  Node_t *head = root;
+  // we traverse the list be stop one before last
+  while(head->next->next != NULL)
+  {
+    head = head->next;
+  }
+  // we store the last one.
+  node = head->next;
+  // remove the link to it
+  head->next = NULL;
+  // and return the stored link
+  // to be used in another node.
+  return node;
+}
+
 void for_item_do(Node_t *root, void(*func)(Node_t *))
 {
   // goes over every node,
@@ -149,6 +173,12 @@ void testingNodes(void)
   Serial.print("printing values in list: ");
   for_item_do(node, printValue);
   
+  Serial.print("poping: ");
+  Node_t *anode = pop(node);
+  Serial.println(anode->value);
+  Serial.print("printing values in list: ");
+  for_item_do(node, printValue);
+  
   Serial.println("deleting list.");
   deleteNode(&node);
   Serial.print("list deleted: ");
@@ -157,7 +187,7 @@ void testingNodes(void)
   Serial.println(newNode == NULL ? "True" : "False");
   Serial.print("newNode->value: ");
   Serial.println(newNode->value);
-  Serial.print("deleting newnode.");
+  Serial.println("deleting newnode.");
   deleteNode(&newNode);
   Serial.print("newnode deleted?: ");
   Serial.println(newNode == NULL ? "True" : "False");

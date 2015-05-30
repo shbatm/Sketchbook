@@ -6,7 +6,17 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
 char dbgStr[100];
 
-Node_t *stack = createNode();
+char mathops[] = 
+{
+  '+',
+  '-',
+  '*',
+  '/'
+};
+
+#define NUMMATHOPS (sizeof(mathops) * sizeof(char))
+
+Node_t *stack = NULL;
 
 void printStackItems(Node_t *item)
 {
@@ -19,10 +29,7 @@ void printStackItems(Node_t *item)
 }
 
 void setup()
-{
-  stack->value = 0;
-  stack->type = NONE;
-  
+{  
   Wire.pins(0, 2);
   lcd.begin(16, 2);
   lcd.backlight();
@@ -31,6 +38,7 @@ void setup()
   
   Serial.begin(115200);
   Serial.println();
+  testingNodes();
 }
 
 void printStack(Node_t *stack)
@@ -42,9 +50,9 @@ char inbyte = 0;
 
 void parseSerialInput()
 {
-  inbyte = Serial.read();
-  if(Serial.available() > 0)
+  if(Serial.available())
   {
+    inbyte = Serial.read();
     if(isdigit(inbyte))
     {
       char tempnum[64];
@@ -66,23 +74,25 @@ void parseSerialInput()
       Serial.println(num);
     }
     // check if incomming databyte is a letter
-    else if(isalpha(inbyte))
+    if(isalpha(inbyte))
     {
     }
     // check if incomming databyte is neither a letter or digit but printable.
     // thus a special like @ or () or any thing like that.
-    else if(ispunct(inbyte))
+    if(ispunct(inbyte))
     {
     }
+    printStack(stack);
   }
 }
+
+unsigned long int current;
 
 void loop()
 {
   parseSerialInput();
-//  printStack(stack);
   lcd.setCursor(0, 0);
-  lcd.print(millis());
+  lcd.print(micros());
 }
 
 //void setup()
