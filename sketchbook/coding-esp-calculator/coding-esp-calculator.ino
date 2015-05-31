@@ -6,15 +6,20 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
 char dbgStr[100];
 
-char mathops[] = 
+typedef struct {
+  char op;
+  int percendence;
+} operator_t;
+
+operator_t ops[] =
 {
-  '+',
-  '-',
-  '*',
-  '/'
+  {'+', 0},
+  {'-', 1},
+  {'*', 2},
+  {'/', 3}
 };
 
-#define NUMMATHOPS (sizeof(mathops) * sizeof(char))
+#define NUMOPS (sizeof(ops) / sizeof(operator_t))
 
 Node_t *stack = createNode();
 Node_t *queue = createNode();
@@ -23,23 +28,23 @@ void printStackItems(Node_t *item)
 {
   Serial.print(item->value);
   Serial.print(':');
-  if(item->next == NULL)
+  if (item->next == NULL)
   {
     Serial.println();
   }
 }
 
 void setup()
-{  
+{
   Wire.pins(0, 2);
   lcd.begin(16, 2);
   lcd.backlight();
   lcd.home();
   lcd.clear();
-  
+
   stack->value = 0;
   stack->type = NONE;
-  
+
   Serial.begin(115200);
   Serial.println();
   testingNodes();
@@ -55,23 +60,23 @@ char inbyte = 0;
 
 void parseSerialInput()
 {
-  if(Serial.available())
+  if (Serial.available())
   {
     inbyte = Serial.read();
-    if(isdigit(inbyte))
+    if (isdigit(inbyte))
     {
       char tempnum[64];
       int i = 0;
       tempnum[i++] = inbyte;
-      while((Serial.available() > 0) && isdigit(inbyte))
+      while ((Serial.available() > 0) && isdigit(inbyte))
       {
         inbyte = Serial.read();
         tempnum[i] = inbyte;
         tempnum[++i] = '\0';
       }
       uint32_t num = atol(tempnum);
-      
-      if(stack->type == NONE)
+
+      if (stack->type == NONE)
       {
         stack->value = num;
         stack->type = INT;
@@ -81,24 +86,39 @@ void parseSerialInput()
         Node_t *number = createNode();
         number->value = num;
         number->type = INT;
-        push(stack, number);
+        Node_t *poped = pop(stack);
+        Serial.print("poped value, type==INT: ");
+        Serial.println(poped->type == INT ? "True" : "False");
+        Serial.println(poped->value);
+//        if(poped->type == INT)
+//        {
+          //push(stack, poped);
+          //push(stack, number);
+//        }
+//        if(last->type == OPP)
+//        {
+//          push(stack, number);
+//          push(stack, last);
+//        }
       }
-      
     }
     // check if incomming databyte is a letter
-    if(isalpha(inbyte))
+    if (isalpha(inbyte))
     {
     }
     // check if incomming databyte is neither a letter or digit but printable.
     // thus a special like @ or () or any thing like that.
-    if(ispunct(inbyte))
+    if (ispunct(inbyte))
     {
+//      Serial.println(NUMOPS);
+//      for(int i = 0;i<NUMOPS;i++)
+//      {
+//        Serial.println(ops[i].op);
+//      }
     }
     printStack(stack);
   }
 }
-
-unsigned long int current;
 
 void loop()
 {

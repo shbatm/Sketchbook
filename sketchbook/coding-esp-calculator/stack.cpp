@@ -77,21 +77,32 @@ void push(Node_t *root, Node_t *node)
 
 Node_t *pop(Node_t *root)
 {
-  // this one is tricky
-  Node_t *node = NULL;
-  Node_t *head = root;
-  // we traverse the list be stop one before last
-  while(head->next->next != NULL)
+  if(nodeLength(root) == 1)
   {
-    head = head->next;
+    return root;
   }
-  // we store the last one.
-  node = head->next;
-  // remove the link to it
-  head->next = NULL;
-  // and return the stored link
-  // to be used in another node.
-  return node;
+  else if(nodeLength(root) > 1)
+  {
+    // this one is tricky
+    Node_t *node = NULL;
+    Node_t *head = root;
+    // we traverse the list be stop one before last
+    while(head->next->next != NULL)
+    {
+      head = head->next;
+    }
+    // we store the last one.
+    node = head->next;
+    // remove the link to it
+    head->next = NULL;
+    // and return the stored link
+    // to be used in another node.
+    return node;
+  }
+  else
+  {
+    Serial.println("Error in pop func, length ! >= 1");
+  }
 }
 
 void for_item_do(Node_t *root, void(*func)(Node_t *))
