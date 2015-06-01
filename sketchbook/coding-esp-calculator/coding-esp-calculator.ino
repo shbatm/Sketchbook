@@ -21,8 +21,8 @@ operator_t ops[] =
 
 #define NUMOPS (sizeof(ops) / sizeof(operator_t))
 
-Node_t *stack = createNode();
-Node_t *queue = createNode();
+Node_t *stack = NULL;
+Node_t *queue = NULL;
 
 void printStackItems(Node_t *item)
 {
@@ -42,9 +42,6 @@ void setup()
   lcd.home();
   lcd.clear();
 
-  stack->value = 0;
-  stack->type = NONE;
-
   Serial.begin(115200);
   Serial.println();
   testingNodes();
@@ -54,6 +51,7 @@ void printStack(Node_t *stack)
 {
   Serial.print("stack: ");
   for_item_do(stack, printStackItems);
+  Serial.println();
 }
 
 char inbyte = 0;
@@ -75,31 +73,33 @@ void parseSerialInput()
         tempnum[++i] = '\0';
       }
       uint32_t num = atol(tempnum);
-
-      if (stack->type == NONE)
+      
+      Node_t *number = createNode();
+      number->value = num;
+      number->type = INT;
+      
+      // is there anything on the stack?
+      if(stack == NULL)
       {
-        stack->value = num;
-        stack->type = INT;
+        // if not make first node number.
+        Serial.println("pushing to stack since stack NULL. ");
+        stack = number;
+        Serial.println(stack == NULL ? "True" : "False");
       }
       else
       {
-        Node_t *number = createNode();
-        number->value = num;
-        number->type = INT;
+        // if stack do your magic parsing.
         Node_t *poped = pop(stack);
-        Serial.print("poped value, type==INT: ");
-        Serial.println(poped->type == INT ? "True" : "False");
+        Serial.println(poped == NULL ? "True" : "False");
+        Serial.println(stack == NULL ? "True" : "False");
+        Serial.print("poped->value: ");
         Serial.println(poped->value);
-//        if(poped->type == INT)
-//        {
-          //push(stack, poped);
-          //push(stack, number);
-//        }
-//        if(last->type == OPP)
-//        {
-//          push(stack, number);
-//          push(stack, last);
-//        }
+        Serial.println(poped->type == INT ? "type==INT" : "type!=INT");
+        if(poped->type == INT)
+        {
+          push(stack, poped);
+          push(stack, number);
+        }
       }
     }
     // check if incomming databyte is a letter

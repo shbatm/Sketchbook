@@ -72,14 +72,19 @@ unsigned int nodeLength(Node_t *node)
 
 void push(Node_t *root, Node_t *node)
 {
-  appendNode(root, node);
+  if(root != node)
+  {
+    appendNode(root, node);
+  }
 }
 
 Node_t *pop(Node_t *root)
 {
   if(nodeLength(root) == 1)
   {
-    return root;
+    Node_t *node = root;
+    root = NULL;
+    return node;
   }
   else if(nodeLength(root) > 1)
   {
@@ -101,12 +106,17 @@ Node_t *pop(Node_t *root)
   }
   else
   {
-    Serial.println("Error in pop func, length ! >= 1");
+    return NULL;
   }
 }
 
 void for_item_do(Node_t *root, void(*func)(Node_t *))
 {
+  // if root == null there are no items thus just return.
+  if(root == NULL)
+  {
+    return;
+  }
   // goes over every node,
   // and passes that to a function handler.
   int i = 0;
