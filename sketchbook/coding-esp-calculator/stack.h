@@ -16,7 +16,7 @@ extern "C"
 
 #include <assert.h>
 
-enum {NONE, CHAR, INT, OPP, OPEN_PAREN, CLOSE_PAREN};
+enum {NONE, CHAR, INT, OP, OPEN_PAREN, CLOSE_PAREN};
 
 struct _node
 {

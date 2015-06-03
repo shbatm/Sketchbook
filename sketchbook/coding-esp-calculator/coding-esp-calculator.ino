@@ -90,11 +90,16 @@ void parseSerialInput()
       {
         // if stack do your magic parsing.
         Node_t *poped = pop(stack);
+        Serial.print("poped == NULL: ");
         Serial.println(poped == NULL ? "True" : "False");
+        Serial.print("stack == NULL: ");
         Serial.println(stack == NULL ? "True" : "False");
         Serial.print("poped->value: ");
         Serial.println(poped->value);
+        Serial.print("poped->type == INT");
         Serial.println(poped->type == INT ? "type==INT" : "type!=INT");
+        Serial.print("poped->type == OP");
+        Serial.println(poped->type == OP ? "type==INT" : "type!=INT");
         if(poped->type == INT)
         {
           push(stack, poped);
@@ -124,7 +129,7 @@ void loop()
 {
   parseSerialInput();
   lcd.setCursor(0, 0);
-  lcd.print(micros());
+  lcd.print((unsigned long)micros());
 }
 
 //void setup()
