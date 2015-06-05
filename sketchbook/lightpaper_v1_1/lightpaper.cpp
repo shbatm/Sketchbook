@@ -1,4 +1,4 @@
-#include <lightpaper.h>
+#include "lightpaper.h"
 
 unsigned long marquee_current = 0;
 unsigned long marquee_previous = 0;

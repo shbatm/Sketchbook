@@ -28,11 +28,28 @@ char  ReplyBuffer[] = "acknowledged";       // a string to send back
 
 WiFiUDP Udp;
 
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
+}
+
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
 void setup() {
   //Initialize serial and wait for port to open:
-  Serial.begin(921600);
+  Serial.begin(115200);
 
   // attempt to connect to Wifi network:
   while ( WiFi.status() != WL_CONNECTED) {
@@ -103,20 +120,3 @@ void loop() {
     displayChar(buff);
 }
 
-
-void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
-
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
-}

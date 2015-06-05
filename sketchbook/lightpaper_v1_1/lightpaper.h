@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <Arduino.h>
-#include <font5x7.h>
+#include "font5x7.h"
 
 #define SCLK 2     // purple wire
 #define R 4        // green wire
