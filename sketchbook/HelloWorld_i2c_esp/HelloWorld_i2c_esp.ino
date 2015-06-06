@@ -4,7 +4,7 @@
  terry@yourduino.com */
 
 /*-----( Import needed libraries )-----*/
-#include <Wire.h>  // Comes with Arduino IDE
+#include "Wire.h"  // Comes with Arduino IDE
 // Get the LCD I2C Library here: 
 // https://bitbucket.org/fmalpartida/new-liquidcrystal/downloads
 // Move any other LCD libraries to another folder or delete them

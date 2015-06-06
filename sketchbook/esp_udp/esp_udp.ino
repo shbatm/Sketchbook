@@ -1,4 +1,4 @@
-#include "ESP8266WiFi.h"
+#include <ESP8266WiFi.h>
 #include "WiFiUdp.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -52,12 +52,11 @@ void setup() {
   Serial.begin(115200);
 
   // attempt to connect to Wifi network:
+  // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+  WiFi.begin(ssid, pass);
   while ( WiFi.status() != WL_CONNECTED) {
     Serial.print("\nAttempting to connect to SSID: ");
     Serial.println(ssid);
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    WiFi.begin(ssid, pass);
-
     // wait 10 seconds for connection:
     delay(500);
   }
