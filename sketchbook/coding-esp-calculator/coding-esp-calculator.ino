@@ -24,14 +24,16 @@ operator_t ops[] =
 Node_t *stack = NULL;
 Node_t *queue = NULL;
 
-void printStackItems(Node_t *item)
+boolean isoperator(byte op)
 {
-  Serial.print(item->value);
-  Serial.print(':');
-  if (item->next == NULL)
+  for(int i = 0; i < NUMOPS;i++)
   {
-    Serial.println();
+    if(ops[i].op == op)
+    {
+      return true;
+    }
   }
+  return false;
 }
 
 void setup()
@@ -47,6 +49,20 @@ void setup()
   testingNodes();
 }
 
+
+void printStackItems(Node_t *item)
+{
+  if(item->type == OP)
+    Serial.write(item->value);
+  else
+    Serial.print(item->value);
+  Serial.print(':');
+  if (item->next == NULL)
+  {
+    Serial.println();
+  }
+}
+
 void printStack(Node_t *stack)
 {
   Serial.print("stack: ");
@@ -58,76 +74,140 @@ char inbyte = 0;
 
 void parseSerialInput()
 {
-  if (Serial.available())
+  if(Serial.available())
   {
     inbyte = Serial.read();
-    if (isdigit(inbyte))
+    while(inbyte != '\n')
     {
-      char tempnum[64];
-      int i = 0;
-      tempnum[i++] = inbyte;
-      while ((Serial.available() > 0) && isdigit(inbyte))
+      if (isdigit(inbyte))
       {
-        inbyte = Serial.read();
-        tempnum[i] = inbyte;
-        tempnum[++i] = '\0';
-      }
-      uint32_t num = atol(tempnum);
-      
-      Node_t *number = createNode();
-      number->value = num;
-      number->type = INT;
-      
-      // is there anything on the stack?
-      if(stack == NULL)
-      {
-        // if not make first node number.
-        Serial.println("pushing to stack since stack NULL. ");
-        stack = number;
-        Serial.println(stack == NULL ? "True" : "False");
-      }
-      else
-      {
-        // if stack do your magic parsing.
-        Node_t *poped = pop(stack);
-        Serial.print("poped == NULL: ");
-        Serial.println(poped == NULL ? "True" : "False");
-        Serial.print("stack == NULL: ");
-        Serial.println(stack == NULL ? "True" : "False");
-        Serial.print("poped->value: ");
-        Serial.println(poped->value);
-        Serial.print("poped->type == INT");
-        Serial.println(poped->type == INT ? "type==INT" : "type!=INT");
-        Serial.print("poped->type == OP");
-        Serial.println(poped->type == OP ? "type==INT" : "type!=INT");
-        if(poped->type == INT)
+        char tempnum[64];
+        int i = 0;
+        tempnum[i++] = inbyte;
+        while ((Serial.available() > 0) && isdigit(inbyte))
         {
-          push(stack, poped);
-          push(stack, number);
+          inbyte = Serial.read();
+          tempnum[i] = inbyte;
+          tempnum[++i] = '\0';
+        }
+        uint32_t num = atol(tempnum);
+        
+        Node_t *number = createNode();
+        number->value = num;
+        number->type = INT;
+        
+        // is there anything on the stack?
+        if(stack == NULL)
+        {
+          // if not make first node number.
+          Serial.println("pushing to stack since stack NULL. ");
+          stack = number;
+          Serial.println(stack == NULL ? "True" : "False");
+        }
+        else
+        {
+          // if stack do your magic parsing.
+          Node_t *poped = pop(stack);
+          if(poped->type == INT)
+          {
+            push(stack, poped);
+            push(stack, number);
+          }
+          if(poped->type == OP)
+          {
+            push(stack, number);
+            push(stack, poped);
+          }
         }
       }
-    }
-    // check if incomming databyte is a letter
-    if (isalpha(inbyte))
-    {
-    }
-    // check if incomming databyte is neither a letter or digit but printable.
-    // thus a special like @ or () or any thing like that.
-    if (ispunct(inbyte))
-    {
-//      Serial.println(NUMOPS);
-//      for(int i = 0;i<NUMOPS;i++)
-//      {
-//        Serial.println(ops[i].op);
-//      }
+      // check if incomming databyte is a letter
+      if (isalpha(inbyte))
+      {
+      }
+      // check if incomming databyte is neither a letter or digit but printable.
+      // thus a special like @ or () or any thing like that.
+      if (ispunct(inbyte))
+      {
+        if(isoperator(inbyte))
+        {
+          Node_t *op = createNode();
+          op->value = inbyte;
+          op->type = OP;
+          push(stack, op);
+        }
+      }
+    inbyte = Serial.read();
     }
     printStack(stack);
   }
 }
 
+int addition(int left, int right)
+{
+  return left+right;
+}
+
+int subtraction(int left, int right)
+{
+  return left - right;
+}
+
+int multiplication(int left, int right)
+{
+  return left * right;
+}
+
+int division(int left, int right)
+{
+  return left / right;
+}
+
+void evalQue(Node_t *que)
+{
+  if(que == NULL)
+    return;
+  while(nodeLength(que) != 1)
+  {
+    Node_t *poped = pop(que);
+    if(poped->type == OP)
+    {
+      Node_t *result = createNode();
+      result->type = INT;
+      Node_t *right = pop(que);
+      Node_t *left = pop(que);
+      int rval = right->value;
+      int lval = left->value;
+      deleteNode(&right);
+      deleteNode(&left);
+      if(poped->value == '+')
+      {
+        result->value = addition(rval, lval);
+      }
+      else if(poped->value == '-')
+      {
+        result->value = subtraction(rval, lval);
+      }
+      else if(poped->value == '*')
+      {
+        result->value = multiplication(rval, lval);
+      }
+      else if(poped->value == '/')
+      {
+        result->value = division(rval, lval);
+      }
+      push(que, result);
+    }
+  }
+  printStack(stack);
+  Serial.print(">> ");
+  Serial.println(que->value);
+  deleteNode(&stack);
+}
+
 void loop()
 {
   parseSerialInput();
+  evalQue(stack);
   lcd.setCursor(0, 0);
   lcd.print((unsigned long)micros());
 }
