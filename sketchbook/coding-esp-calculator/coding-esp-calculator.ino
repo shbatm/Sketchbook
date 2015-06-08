@@ -1,262 +1,114 @@
-#include "stack.h"
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+char inbyte = 0;
+#define INPBUFFSIZE 1000
+static char inputbuff[INPBUFFSIZE];
+unsigned int inp = 0;
 
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+enum {CHAR, INT, OP, STR, FUNC};
 
-char dbgStr[100];
-
-typedef struct {
-  char op;
-  int percendence;
-} operator_t;
-
-operator_t ops[] =
+struct _tok
 {
-  {'+', 0},
-  {'-', 1},
-  {'*', 2},
-  {'/', 3}
+  unsigned int value;
+  uint8_t type;
 };
 
-#define NUMOPS (sizeof(ops) / sizeof(operator_t))
+typedef struct _tok token_t;
 
-Node_t *stack = NULL;
-Node_t *queue = NULL;
+#define STACKSIZE 1000
+token_t stack[STACKSIZE];
+unsigned int sp = 0;
 
-boolean isoperator(byte op)
+void push(struct _tok tok)
 {
-  for(int i = 0; i < NUMOPS;i++)
+  stack[sp++] = tok;
+  if(sp == STACKSIZE)
+    Serial.println("stack overflow.");
+}
+
+struct _tok pop()
+{
+  sp--;
+  if(sp == 65536)
   {
-    if(ops[i].op == op)
-    {
-      return true;
-    }
+    Serial.println("stack underflow");
   }
+}
+
+bool isoperator(char c)
+{
   return false;
 }
 
-void setup()
+int readinput(char *buffer, unsigned int limit)
 {
-  Wire.pins(0, 2);
-  lcd.begin(16, 2);
-  lcd.backlight();
-  lcd.home();
-  lcd.clear();
-
-  Serial.begin(115200);
-  Serial.println();
-  testingNodes();
-}
-
-
-void printStackItems(Node_t *item)
-{
-  if(item->type == OP)
-    Serial.write(item->value);
-  else
-    Serial.print(item->value);
-  Serial.print(':');
-  if (item->next == NULL)
-  {
-    Serial.println();
-  }
-}
-
-void printStack(Node_t *stack)
-{
-  Serial.print("stack: ");
-  for_item_do(stack, printStackItems);
-  Serial.println();
-}
-
-char inbyte = 0;
-
-void parseSerialInput()
-{
-  if(Serial.available())
+  static unsigned int index;
+  index = 0;
+  if(Serial.available() > 0)
   {
     inbyte = Serial.read();
     while(inbyte != '\n')
     {
-      if (isdigit(inbyte))
+      if(Serial.available() > 0)
       {
-        char tempnum[64];
-        int i = 0;
-        tempnum[i++] = inbyte;
-        while ((Serial.available() > 0) && isdigit(inbyte))
+        inputbuff[index] = inbyte;
+        inputbuff[++index] = '\0';
+        if(index == limit)
         {
-          inbyte = Serial.read();
-          tempnum[i] = inbyte;
-          tempnum[++i] = '\0';
+          index = 0;
+          break;
         }
-        uint32_t num = atol(tempnum);
-        
-        Node_t *number = createNode();
-        number->value = num;
-        number->type = INT;
-        
-        // is there anything on the stack?
-        if(stack == NULL)
-        {
-          // if not make first node number.
-          Serial.println("pushing to stack since stack NULL. ");
-          stack = number;
-          Serial.println(stack == NULL ? "True" : "False");
-        }
-        else
-        {
-          // if stack do your magic parsing.
-          Node_t *poped = pop(stack);
-          if(poped->type == INT)
-          {
-            push(stack, poped);
-            push(stack, number);
-          }
-          if(poped->type == OP)
-          {
-            push(stack, number);
-            push(stack, poped);
-          }
-        }
+        inbyte = Serial.read();
       }
-      // check if incomming databyte is a letter
-      if (isalpha(inbyte))
-      {
-      }
-      // check if incomming databyte is neither a letter or digit but printable.
-      // thus a special like @ or () or any thing like that.
-      if (ispunct(inbyte))
-      {
-        if(isoperator(inbyte))
-        {
-          Node_t *op = createNode();
-          op->value = inbyte;
-          op->type = OP;
-          push(stack, op);
-        }
-      }
-    inbyte = Serial.read();
+      delay(0);
     }
-    printStack(stack);
+    Serial.print(">> ");
+    Serial.println(inputbuff);
   }
+  return index;
 }
 
-int addition(int left, int right)
+void tokenizeInput(char *buff, unsigned int len)
 {
-  return left+right;
-}
-
-int subtraction(int left, int right)
-{
-  return left - right;
-}
-
-int multiplication(int left, int right)
-{
-  return left * right;
-}
-
-int division(int left, int right)
-{
-  return left / right;
-}
-
-void evalQue(Node_t *que)
-{
-  if(que == NULL)
-    return;
-  while(nodeLength(que) != 1)
+  static unsigned int num;
+  static unsigned int numi;
+  static char strnum[20];
+  static token_t token;
+  
+  for(int i = 0; i < len; i++)
   {
-    Node_t *poped = pop(que);
-    if(poped->type == OP)
+    // if it is a digit stor it in a number
+    if(isdigit(buff[i]))
     {
-      Node_t *result = createNode();
-      result->type = INT;
-      Node_t *right = pop(que);
-      Node_t *left = pop(que);
-      int rval = right->value;
-      int lval = left->value;
-      deleteNode(&right);
-      deleteNode(&left);
-      if(poped->value == '+')
+      // while reading digits add to temp string holder.
+      while(isdigit(buff[i]))
       {
-        result->value = addition(rval, lval);
+        strnum[numi++] = buff[i++];
       }
-      else if(poped->value == '-')
-      {
-        result->value = subtraction(rval, lval);
-      }
-      else if(poped->value == '*')
-      {
-        result->value = multiplication(rval, lval);
-      }
-      else if(poped->value == '/')
-      {
-        result->value = division(rval, lval);
-      }
-      push(que, result);
+      // set numi to 0 to start index at zero again.
+      numi = 0;
+      // convert to ascii rep to num.
+      num = atoi(strnum);
+      // clear first byte to make string empty.
+      strnum[0] = '\0';
+      // fill in token detail.
+      token.type = INT;
+      token.value = num;
+      Serial.print(sizeof(token.value));
+      Serial.print(":num: ");
+      Serial.println(token.value);
+    }
+    else if(isoperator(buff[i]))
+    {
     }
   }
-  printStack(stack);
-  Serial.print(">> ");
-  Serial.println(que->value);
-  deleteNode(&stack);
+}
+
+void setup()
+{
+  Serial.begin(115200);
 }
 
 void loop()
 {
-  parseSerialInput();
-  evalQue(stack);
-  lcd.setCursor(0, 0);
-  lcd.print((unsigned long)micros());
+  inp = readinput(inputbuff, INPBUFFSIZE);
+  tokenizeInput(inputbuff, inp);
 }
-
-//void setup()
-//{
-//  Wire.pins(0, 2);
-//  lcd.begin(16, 2);
-//  lcd.backlight();
-//  lcd.home();
-//  lcd.clear();
-//  Serial.begin(115200);
-//}
-//
-//void loop()
-//{
-//  if(Serial.available() > -1)
-//  {
-//    char inbyte = Serial.read();
-//    if(isdigit(inbyte))
-//    {
-//      char tempnum[64] = {0};
-//      int i = 0;
-//      while((Serial.available() > 0) && isdigit(inbyte))
-//      {
-//        tempnum[i] = inbyte;
-//        tempnum[i+1] = '\0';
-//        i++;
-//        inbyte = Serial.read();
-//      }
-//      Serial.print(strlen(tempnum));
-//      Serial.print(":");
-//      Serial.println(tempnum);
-//
-//      uint32_t num = atoi(tempnum);
-//      Serial.print(sizeof num);
-//      Serial.print(":");
-//      Serial.println(num);
-//    }
-//    // check if incomming databyte is a letter
-//    else if(isalpha(inbyte))
-//    {
-//    }
-//    // check if incomming databyte is neither a letter or digit but printable.
-//    // thus a special like @ or () or any thing like that.
-//    else if(ispunct(inbyte))
-//    {
-//    }
-//  }
-//  lcd.setCursor(0, 0);
-//  lcd.print(millis());
-//}
