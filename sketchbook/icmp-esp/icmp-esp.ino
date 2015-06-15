@@ -80,9 +80,6 @@ void loop() {
       if((buttoncount - buttonprev) >= buttoninterval)
       {
         buttonprev = buttoncount;
-        static char fmtstr[100];
-        sprintf(fmtstr, "button pressed for %d seconds long", buttoninterval);
-        Serial.println(fmtstr);
         resetModule();
       }
       delay(0);
