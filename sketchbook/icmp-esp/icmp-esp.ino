@@ -10,6 +10,11 @@ const char* password = "hax4or2the2paxor3";
 
 ESP8266WebServer server(80);
 
+void resetModule(void)
+{
+  ESP.reset();
+}
+
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
@@ -27,11 +32,26 @@ void printWifiStatus() {
   Serial.println(" dBm");
 }
 
-void handleRoot(){}
+void handleRoot()
+{
+  String html = 
+  "<h1>"
+    "Hello there!"
+  "</h1>"
+  ;
+  server.send(200, "text/html", html);
+}
 
 void setupAP()
 {
   WiFi.mode(WIFI_AP);
+  WiFi.softAP(ap_ssid, ap_password);
+  Serial.println();
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.println(myIP);
+  server.on("/", handleRoot);
+  server.begin();
+  Serial.println("done setting up server");
 }
 
 void setupSTA()
@@ -41,7 +61,32 @@ void setupSTA()
 
 void setup() {
   Serial.begin(115200);
+  pinMode(0, INPUT_PULLUP);
+  setupAP();
 }
 
+unsigned long long buttoncount;
+unsigned long long buttonprev;
+int buttoninterval = 2000;
+
 void loop() {
+  if(!digitalRead(0))
+  {
+    buttoncount = millis();
+    buttonprev = buttoncount;
+    while(!digitalRead(0))
+    {
+      buttoncount = millis();
+      if((buttoncount - buttonprev) >= buttoninterval)
+      {
+        buttonprev = buttoncount;
+        static char fmtstr[100];
+        sprintf(fmtstr, "button pressed for %d seconds long", buttoninterval);
+        Serial.println(fmtstr);
+        resetModule();
+      }
+      delay(0);
+    }
+  }
+  server.handleClient();
 }
