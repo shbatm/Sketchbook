@@ -2,17 +2,38 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266WebServer.h>
 
-const char* ap_ssid = "TheEsp";
-const char* ap_password = "nospoonthereis";
+char ap_ssid[] = "TheEsp";
+char ap_password[] = "nospoonthereis";
 
-const char* ssid = "wwww.tkkrlab.nl";
-const char* password = "hax4or2the2paxor3";
+char ssid[] = "www.tkkrlab.nl";
+char pass[] = "hax4or2the2paxor3";
+
+enum {STA_MODE, AP_MODE};
+int currentMode = AP_MODE;
 
 ESP8266WebServer server(80);
+#include "htmlroot.h"
 
-void resetModule(void)
+void moduleResetHandling(void)
 {
-  ESP.reset();
+  static unsigned long long buttoncount;
+  static unsigned long long buttonprev;
+  static int buttoninterval = 2000;
+
+  buttoncount = millis();
+  buttonprev = buttoncount;
+  while(!digitalRead(0))
+  {
+    buttoncount = millis();
+    if((buttoncount - buttonprev) >= buttoninterval)
+    {
+      pinMode(0, OUTPUT);
+      digitalWrite(0, LOW);
+      buttonprev = buttoncount;
+      for(;;);
+    }
+    delay(0);
+  }
 }
 
 void printWifiStatus() {
@@ -32,16 +53,6 @@ void printWifiStatus() {
   Serial.println(" dBm");
 }
 
-void handleRoot()
-{
-  String html = 
-  "<h1>"
-    "Hello there!"
-  "</h1>"
-  ;
-  server.send(200, "text/html", html);
-}
-
 void setupAP()
 {
   WiFi.mode(WIFI_AP);
@@ -57,32 +68,41 @@ void setupAP()
 void setupSTA()
 {
   WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  while(WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  printWifiStatus();
 }
 
 void setup() {
   Serial.begin(115200);
+  pinMode(0, INPUT);
   pinMode(0, INPUT_PULLUP);
   setupAP();
 }
 
-unsigned long long buttoncount;
-unsigned long long buttonprev;
-int buttoninterval = 2000;
-
 void loop() {
   if(!digitalRead(0))
   {
-    buttoncount = millis();
-    buttonprev = buttoncount;
-    while(!digitalRead(0))
+    moduleResetHandling();
+    if(digitalRead(0))
     {
-      buttoncount = millis();
-      if((buttoncount - buttonprev) >= buttoninterval)
+      if(currentMode == STA_MODE)
       {
-        buttonprev = buttoncount;
-        resetModule();
+        currentMode = AP_MODE;
+        Serial.println("mode is now AP_MODE");
+        setupAP();
       }
-      delay(0);
+      else
+      {
+        currentMode = STA_MODE;
+        Serial.println("mode is now STA_MODE");
+        setupSTA();
+      }
     }
   }
   server.handleClient();
