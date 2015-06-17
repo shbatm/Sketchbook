@@ -1,18 +1,67 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
-#include <ESP8266WebServer.h>
+#include <WiFiUdp.h>
+#include "Artnet.h"
+#include "htmlroot.h"
 
 char ap_ssid[] = "TheEsp";
 char ap_password[] = "nospoonthereis";
 
-char ssid[] = "www.tkkrlab.nl";
-char pass[] = "hax4or2the2paxor3";
+char ssid[] = "HuisVanDerTuuk";
+char pass[] = "10SamSung@H";
+
+char mac[] = {'e','s','p','l','c','0'};
+
+WiFiUDP listener;
+
+void handleSketchUpdate()
+{
+  int cb = listener.parsePacket();
+  if(cb)
+  {
+    IPAddress remote = listener.remoteIP();
+    int cmd  = listener.parseInt();
+    int port = listener.parseInt();
+    int sz   = listener.parseInt();
+    Serial.println("Got update: ");
+    Serial.printf("%d %d %d\r\n", cmd, port, sz);
+    WiFiClient cl;
+    if(!cl.connect(remote, port))
+    {
+      Serial.println("failed to connect.");
+      ESP.reset();
+    }
+    listener.stop();
+    if(!ESP.updateSketch(cl, sz))
+    {
+      Serial.println("Update failed.");
+      ESP.reset();
+    }
+  }
+}
 
 enum {STA_MODE, AP_MODE};
-int currentMode = AP_MODE;
+int currentMode = STA_MODE;
+
+String iptostr(IPAddress ip)
+{
+  String ipstr;
+  for(int i = 0; i< 4; i++)
+  {
+    if(i == 3)
+    {
+      ipstr += String(ip[i]);
+    }
+    else
+    {
+      ipstr += String(ip[i]);
+      ipstr += ".";
+    }
+  }
+  return ipstr;
+}
 
 ESP8266WebServer server(80);
-#include "htmlroot.h"
 
 void moduleResetHandling(void)
 {
@@ -60,9 +109,6 @@ void setupAP()
   Serial.println();
   IPAddress myIP = WiFi.softAPIP();
   Serial.println(myIP);
-  server.on("/", handleRoot);
-  server.begin();
-  Serial.println("done setting up server");
 }
 
 void setupSTA()
@@ -80,12 +126,23 @@ void setupSTA()
 
 void setup() {
   Serial.begin(115200);
+  Serial.setDebugOutput(true);
   pinMode(0, INPUT);
   pinMode(0, INPUT_PULLUP);
-  setupAP();
+  setupSTA();
+
+  server.on("/", handleRoot);
+  server.on("/ledsettings", handleLedSettings);
+  server.on("/wifisettings", handleWiFiSettings);
+  server.begin();
+  Serial.println("done setting up server");
+
+  // updating related.
+  listener.begin(8266);
 }
 
 void loop() {
+  handleSketchUpdate();
   if(!digitalRead(0))
   {
     moduleResetHandling();

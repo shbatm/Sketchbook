@@ -1,86 +1,70 @@
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
 
-ESP8266WebServer server(80);
-MDNSResponder mdns;
+const char* ssid = "HuisVanDerTuuk";
+const char* pass = "10SamSung@H";
 
-int n = 0;
-String ssids;
+WiFiUDP listener;
 
-void handle_root()
+void handleSketchUpdate()
 {
-  server.send(200, "text/plain", "Welcome there!");
+  int cb = listener.parsePacket();
+  if(cb)
+  {
+    IPAddress remote = listener.remoteIP();
+    int cmd  = listener.parseInt();
+    int port = listener.parseInt();
+    int sz   = listener.parseInt();
+    Serial.println("Got update: ");
+    Serial.printf("%d %d %d\r\n", cmd, port, sz);
+    WiFiClient cl;
+    if(!cl.connect(remote, port))
+    {
+      Serial.println("failed to connect.");
+    }
+    listener.stop();
+    if(!ESP.updateSketch(cl, sz))
+    {
+      Serial.println("Update failed.");
+    }
+  }
 }
 
-void handle_wifi_page()
-{  
-  String encription = String("* == No Encrip <br>");
-  String numsAround = String("Num of networks around: " + String(n) + "<br>");
-  
-  String page = "<META HTTP-EQUIV=\"refresh\" CONTENT=\"15\">"+encription + numsAround + ssids;
-  String head = "<head> <META HTTP-EQUIV=\"refresh\" CONTENT=\"1\"> </head>";
-  String body = "<body>" + page + "</body";
-  String html = "<html>" + head + body +"</html>";
-  
-  server.send(200, "text/html", html);
-}
-
-void setup() {
-  // put your setup code here, to run once:
+void setup()
+{
   Serial.begin(115200);
-  WiFi.mode(WIFI_AP);
-  
-  WiFi.begin("www.tkkrlab.nl", "hax4or2the2paxor3");
-  Serial.println("\nConnecting.");
+  Serial.setDebugOutput(true);
+  WiFi.begin(ssid, pass);
   while(WiFi.status() != WL_CONNECTED)
   {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\nWifi connected.");
-  server.on("/", handle_root);
-  server.on("/wifi", handle_wifi_page);
-  server.on("/inline", [] (){
-    server.send(200, "text/plain", "this works as well");
-  });
+  Serial.println();
+  Serial.print("connected to: ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-  if(!mdns.begin("esp8266-Duality", WiFi.localIP()))
-  {
-    Serial.println("Error setting up MDNS/DNS responder.");
-    while(1);
-  }
-  Serial.println("dns setup ");
-  Serial.println("esp8266-Duality");
-  server.begin();
-  Serial.println("exiting setup: ");
+  listener.begin(8266);
 }
 
-unsigned long current = millis();
-unsigned long previous = 0;
-int interval = 1000;
+unsigned long long current = millis();
+unsigned long long previous = current;
+int interval = 500;
+bool shouldSend = false;
 
-void getWifiScan()
+void loop()
 {
-  current = millis();
-  if(current - previous > interval)
+  handleSketchUpdate();
+  if(shouldSend)
   {
-    previous = current;
-    n = WiFi.scanNetworks();
-    ssids = String("");
-    for(int i = 0; i < n; ++i)
-    {
-      ssids += (String(WiFi.SSID(i))+" ");
-      ssids += (String(WiFi.RSSI(i))+" ");
-      ssids += (String(WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
-      ssids += String("<br>");
-    }
+    Serial.println("Hello!");
   }
-}
-
-void loop() {
-  server.handleClient();
-  getWifiScan();
+  current = millis();
+  if((current - previous) >= interval)
+  {
+    previous = millis();
+    shouldSend = !shouldSend;
+  }
 }
 
