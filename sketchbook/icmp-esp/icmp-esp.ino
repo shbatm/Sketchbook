@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
+#include "LedControl.h"
 #include "Artnet.h"
 #include "htmlroot.h"
 
@@ -126,7 +127,6 @@ void setupSTA()
 
 void setup() {
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
   pinMode(0, INPUT);
   pinMode(0, INPUT_PULLUP);
   setupSTA();
@@ -138,6 +138,7 @@ void setup() {
   Serial.println("done setting up server");
 
   // updating related.
+  Serial.setDebugOutput(true);
   listener.begin(8266);
 }
 

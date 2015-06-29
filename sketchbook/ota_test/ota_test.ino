@@ -51,6 +51,4 @@ void loop() {
       Serial.println("Update failed");
     }
   }
-
-  delay(100);
 }

@@ -33,7 +33,7 @@ String css =
   
 String divHeader = 
 "<div id='header'>"
-"<h1> City Gallery</h1>"
+"<h1> Esp-Info</h1>"
 "</div>"
 ;
 
@@ -41,6 +41,7 @@ String divNav =
 "<div id='nav'>"
 "<a href=\"wifisettings\">WiFi Settings.</a><br>"
 "<a href=\"ledsettings\">led settings.</a><br>"
+"<a href=\"./\">Front page.</a><br>"
 "</div>"
 ;
 
