@@ -9,7 +9,7 @@
 #define R 4        // green wire
 
 #define A 6         // orange wire
-#define B 14         // yellow wire
+#define B 14        // yellow wire
 #define C 15        // brown wire
 
 void setupRows();
