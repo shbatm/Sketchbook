@@ -5,16 +5,19 @@ unsigned long marquee_previous = 0;
 uint8_t marquee_interval = 100;
 int marquee_count = 0;
 
+const uint8_t screen_width = 80;
+const uint8_t screen_height = 8;
+
+const uint8_t segment_width = 5;
 const uint8_t letterwidth = 5;
-const uint8_t numletters = 100;
+const uint8_t numletters = screen_width/segment_width;
 const uint8_t buffersize = letterwidth*numletters;
 uint8_t buffer[buffersize];
 
+// string buffer.
 char string[numletters] = "";
-uint8_t stringlength = strlen(string);
+uint8_t stringlength = numletters;
 
-const uint8_t screen_width = 80;
-const uint8_t screen_height = 8;
 const uint8_t max_letters_visible = screen_width/5;
 
 uint8_t getLPBufferSize()
@@ -127,7 +130,7 @@ void clock()
 
 void clearRow()
 {
-    for(int i = 0; i < 80; i++)
+    for(int i = 0; i < screen_width; i++)
     {
         PORTD &= ~(1<<PORTD4);
         //digitalWrite(R, LOW);
@@ -203,7 +206,7 @@ void writeout(uint8_t offset)
     PORTD |= (1<<PORTD4);
     clock();
     PORTD &= ~(1<<PORTD4);
-    for(int i = 0; i< 80; i++)
+    for(int i = 0; i< screen_width; i++)
     {
         if(i < buffersize-offset)
         {
@@ -218,7 +221,7 @@ void writeout()
     PORTD |= (1<<PORTD4);
     clock();
     PORTD &= ~(1<<PORTD4);
-    for(int i = 0; i< 79; i++)
+    for(int i = 0; i< screen_width; i++)
     {
         setRowData(buffer[i]);
         clock();
