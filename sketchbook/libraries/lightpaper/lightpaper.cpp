@@ -10,7 +10,7 @@ const uint8_t screen_height = 8;
 
 const uint8_t segment_width = 5;
 const uint8_t letterwidth = 5;
-const uint8_t numletters = screen_width/segment_width;
+const uint8_t numletters = 16;
 const uint8_t buffersize = letterwidth*numletters;
 uint8_t buffer[buffersize];
 
@@ -20,7 +20,15 @@ uint8_t stringlength = numletters;
 
 const uint8_t max_letters_visible = screen_width/5;
 
-uint8_t getLPBufferSize()
+void writeLPBuffer(uint8_t inbuff, int size)
+{
+    for(int i = 0;i<buffersize;i++)
+    {
+        buffer[i] = inbuff;
+    }
+}
+
+const uint8_t getLPBufferSize()
 {
     return buffersize;
 }

@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-const char* ssid = "HuisVanDerTuuk";
-const char* pass = "10SamSung@H";
+const char* ssid = "www.tkkrlab.nl";
+const char* pass = "hax4or2the2paxor3";
 
 WiFiUDP listener;
 
@@ -48,14 +48,14 @@ void setup()
   listener.begin(8266);
 }
 
-unsigned long long current = millis();
-unsigned long long previous = current;
-int interval = 500;
+unsigned long previous = 0;
+unsigned long current = 0;
+int interval = 1000;
 bool shouldSend = false;
 
 void loop()
 {
-  handleSketchUpdate();
+  // handleSketchUpdate();
   if(shouldSend)
   {
     Serial.println("Hello!");

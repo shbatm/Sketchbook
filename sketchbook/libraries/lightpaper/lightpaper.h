@@ -67,6 +67,8 @@ uint8_t getLPWidth();
 // returns the width of a single character.
 uint8_t getLPMaxLetterWidth();
 // returns the size of the pixel buffer.
-uint8_t getLPBufferSize();
+const uint8_t getLPBufferSize();
+// write directly into pixel buffer.
+void writeLPBuffer(uint8_t *, int);
 
 #endif

@@ -1,31 +1,26 @@
 #include <lightpaper.h>
 
+uint8_t buff[80];
+
+bool ledstate = false;
+
 void setup()
 {
     setupLightPaper();
-    putStr("HelloHelloWorld!");
+    putStr("Gello");
     Serial.begin(115200);
-    testBuffer();
-}
-
-void testBuffer()
-{
-    // test works jeej!
-    uint8_t *bp_p = getLPBuffer();
-    for(int i = 0;i < getLPBufferSize(); i++)
-    {
-        (*bp_p) = 0xFF;
-        bp_p++;
-    }
+    pinMode(13, OUTPUT);
 }
 
 void loop()
 {
-    // if(Serial.available() >= 0)
+    Serial.print("f");
+    // if(Serial.available() > 0)
     // {
-    //     uint8_t *bp_p = getLPBuffer();
-    //     (*bp_p) = Serial.read();
-    //     bp_p++;
+    //     char readb = Serial.read();
+    //     for(int i = 0; i < 80; i++)
+    //     {
+    //         Serial.write(i);
+    //     }
     // }
-    writeout();
 }
