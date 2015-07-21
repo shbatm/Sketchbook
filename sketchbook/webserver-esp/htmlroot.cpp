@@ -1,5 +1,10 @@
 #include "htmlroot.h"
 
+extern char sta_ssid;
+extern char sta_pass;
+extern char ap_ssid;
+extern char ap_pass;
+
 String css =
 "<style>"
 "#header {"
@@ -58,15 +63,38 @@ String divFooter =
 ;
 
 void handleWiFiSettings(){
+  String ssid = server.arg(0);
+  String pass = server.arg(1);
+  String InputTableSta = 
+  "<form action=\"\" method=\"POST\">"
+  "ssid: <br>"
+  "<input value=\"Hi!\"type=\"text\" name=\"ssid\">"
+  "<br>"
+  "password: <br>"
+  "<input type=\"text\" name=\"password\">"
+  "<input type=\"submit\" value=\"Confirm\">"
+  "<br>"
+  + ssid
+  + pass
+  +
+  "<br>"
+  "</form>";
+
+  String InputTableAp =
+  "<form action=\"\" method=\"POST\">"
+  "</form>"
+  ;
+
   String htmlWiFiSet = 
   "<!DOCTYPE html>"
   "<html>"
   "<title> esp-light page. </title>"
-  "<head>"+css+"</head>"
+  "<head>" + css + "</head>"
   "<body>" +
   divHeader +
   divNav +
-  divSection +
+  "<h3>Station info:</h3>" +
+  InputTableSta +
   divFooter + 
   "</body>"
   "</html>"

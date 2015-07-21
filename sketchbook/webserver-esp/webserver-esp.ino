@@ -1,15 +1,16 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
-#include "LedControl.h"
-#include "Artnet.h"
+#include <ESP8266mDNS.h>
+#include <LedControl.h>
+
 #include "htmlroot.h"
 
-char ap_ssid[] = "TheEsp";
-char ap_password[] = "nospoonthereis";
+String ap_ssid = "TheEsp";
+String ap_pass = "nospoonthereis";
 
-char ssid[] = "HuisVanDerTuuk";
-char pass[] = "10SamSung@H";
+String sta_ssid = "www.tkkrlab.nl";
+String sta_pass = "hax4or2the2paxor3";
 
 char mac[] = {'e','s','p','l','c','0'};
 
@@ -106,7 +107,7 @@ void printWifiStatus() {
 void setupAP()
 {
   WiFi.mode(WIFI_AP);
-  WiFi.softAP(ap_ssid, ap_password);
+  WiFi.softAP(ap_ssid.c_str(), ap_pass.c_str());
   Serial.println();
   IPAddress myIP = WiFi.softAPIP();
   Serial.println(myIP);
@@ -115,7 +116,7 @@ void setupAP()
 void setupSTA()
 {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
+  WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
   while(WiFi.status() != WL_CONNECTED)
   {
     delay(500);
