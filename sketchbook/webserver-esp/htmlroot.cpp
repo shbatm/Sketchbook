@@ -1,9 +1,9 @@
 #include "htmlroot.h"
 
-extern char sta_ssid;
-extern char sta_pass;
-extern char ap_ssid;
-extern char ap_pass;
+extern String sta_ssid;
+extern String sta_pass;
+extern String ap_ssid;
+extern String ap_pass;
 
 String css =
 "<style>"
@@ -16,7 +16,7 @@ String css =
 "#nav {"
 "    line-height:30px;"
 "    background-color:#eeeeee;"
-"    height:300px;"
+"    height:500px;"
 "    width:150px;"
 "    float:left;"
 "    padding:5px;"
@@ -32,6 +32,15 @@ String css =
 "    clear:both;"
 "    text-align:center;"
 "    padding:5px;"
+"}"
+"#divWifiSettings {"
+"    width:400px;"
+"    height:330px;"
+"    border-collapse: collapse;"
+"    color:black;"
+"    border-style: solid;"
+"    border-width: 1px;"
+"    padding: 10px;"
 "}"
 "</style>" 
 ;
@@ -62,27 +71,43 @@ String divFooter =
 "</div>"
 ;
 
-void handleWiFiSettings(){
-  String ssid = server.arg(0);
-  String pass = server.arg(1);
+void handleWiFiSettings()
+{
+  // get inputs.
+  for(int i = 0;i < server.args(); i++)
+  {
+    if(server.argName(i) == "ssid");
+    if(server.argName(i) == "pass");
+    if(server.argName(i) == "confirmSta");
+    if(server.argName(i) == "bssid");
+    if(server.argName(i) == "bpass");
+    if(server.argName(i) == "confirmAp");
+  }
+  // serve page.
   String InputTableSta = 
-  "<form action=\"\" method=\"POST\">"
   "ssid: <br>"
-  "<input value=\"Hi!\"type=\"text\" name=\"ssid\">"
-  "<br>"
+  "<input value=\"" + sta_ssid + "\" type=\"text\" name=\"ssid\"><br>"
   "password: <br>"
-  "<input type=\"text\" name=\"password\">"
-  "<input type=\"submit\" value=\"Confirm\">"
-  "<br>"
-  + ssid
-  + pass
-  +
-  "<br>"
-  "</form>";
+  "<input value=\"\" type=\"password\" name=\"pass\"><br>"
+  ;
 
   String InputTableAp =
-  "<form action=\"\" method=\"POST\">"
+  "ssid: <br>"
+  "<input value=\"" + ap_ssid + "\" type=\"text\" name=\"bssid\"><br>"
+  "password: <br>"
+  "<input value=\"\" type=\"password\" name=\"bpass\"><br>"
+  ;
+
+  String divWifiSettings = 
+  "<div id='divWifiSettings'>"
+  "<form action=\"\" method=\"GET\">"
+  "<h3>Station settings:</h3>" +
+  InputTableSta +
+  "<h3>Acces Point settings:</h3>" +
+  InputTableAp + 
+  "<input type=\"submit\" value=\"Confirm\" name=\"confirmSta\">"
   "</form>"
+  "</div>"
   ;
 
   String htmlWiFiSet = 
@@ -93,8 +118,7 @@ void handleWiFiSettings(){
   "<body>" +
   divHeader +
   divNav +
-  "<h3>Station info:</h3>" +
-  InputTableSta +
+  divWifiSettings +
   divFooter + 
   "</body>"
   "</html>"

@@ -2,7 +2,6 @@
 #include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
 #include <ESP8266mDNS.h>
-#include <LedControl.h>
 
 #include "htmlroot.h"
 
