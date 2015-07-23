@@ -15,7 +15,7 @@ extern String ap_pass;
 
 extern ESP8266WebServer server;
 
-extern stripcontrol_t *stripcontrol;
+extern stripcontrol_t stripcontrol;
 
 void handleStripControl();
 void handleWiFiSettings();

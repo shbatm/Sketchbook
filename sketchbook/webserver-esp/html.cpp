@@ -68,19 +68,34 @@ String divFooter =
 
 void handleStripControl()
 {
-  String text = "";
+  String text = "protocol debug: <br>";
   for(int i = 0;i < server.args(); i++)
   {
-    Serial.println(server.argName(i) + ": " + server.arg(i));
+    text += server.argName(i) + ": " + server.arg(i) + "<br>";
     if(server.argName(i) == "pincode")
     {
-      // stripcontrol->pincode = server.argName(i).toInt();
+      stripcontrol.pincode = server.arg(i).toInt();
     }
-    else if(server.argName(i) == "effect");
-    else if(server.argName(i) == "brightness");
-    else if(server.argName(i) == "var0");
-    else if(server.argName(i) == "var1");
-    else if(server.argName(i) == "var2");
+    else if(server.argName(i) == "effect")
+    {
+      stripcontrol.effect = server.arg(i).toInt();
+    }
+    else if(server.argName(i) == "brightness")
+    {
+      stripcontrol.brightness = server.arg(i).toInt();
+    }
+    else if(server.argName(i) == "var0")
+    {
+      stripcontrol.varZero = server.arg(i).toInt();
+    }
+    else if(server.argName(i) == "var1")
+    {
+      stripcontrol.varOne = server.arg(i).toInt();
+    }
+    else if(server.argName(i) == "var2")
+    {
+      stripcontrol.varTwo = server.arg(i).toInt();
+    }
     else
     {
       text = "";
@@ -95,11 +110,11 @@ void handleWiFiSettings()
   for(int i = 0;i < server.args(); i++)
   {
     if(server.argName(i) == "ssid");
-    if(server.argName(i) == "pass");
-    if(server.argName(i) == "confirmSta");
-    if(server.argName(i) == "bssid");
-    if(server.argName(i) == "bpass");
-    if(server.argName(i) == "confirmAp");
+    else if(server.argName(i) == "pass");
+    else if(server.argName(i) == "confirmSta");
+    else if(server.argName(i) == "bssid");
+    else if(server.argName(i) == "bpass");
+    else if(server.argName(i) == "confirmAp");
   }
   // serve page.
   String InputTableSta = 
