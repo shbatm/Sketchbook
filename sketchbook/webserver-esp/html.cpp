@@ -1,9 +1,4 @@
-#include "htmlroot.h"
-
-extern String sta_ssid;
-extern String sta_pass;
-extern String ap_ssid;
-extern String ap_pass;
+#include "html.h"
 
 String css =
 "<style>"
@@ -70,6 +65,29 @@ String divFooter =
 "<div id='footer'>"
 "</div>"
 ;
+
+void handleStripControl()
+{
+  String text = "";
+  for(int i = 0;i < server.args(); i++)
+  {
+    Serial.println(server.argName(i) + ": " + server.arg(i));
+    if(server.argName(i) == "pincode")
+    {
+      // stripcontrol->pincode = server.argName(i).toInt();
+    }
+    else if(server.argName(i) == "effect");
+    else if(server.argName(i) == "brightness");
+    else if(server.argName(i) == "var0");
+    else if(server.argName(i) == "var1");
+    else if(server.argName(i) == "var2");
+    else
+    {
+      text = "";
+    }
+  }
+  server.send(200, "text/html", "<h1>LedControl</h1><br>" + text);
+}
 
 void handleWiFiSettings()
 {

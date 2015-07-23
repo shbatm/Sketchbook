@@ -3,13 +3,16 @@
 #include <WiFiUdp.h>
 #include <ESP8266mDNS.h>
 
-#include "htmlroot.h"
+#include "stripcontrol.h"
+#include "html.h"
 
 String ap_ssid = "TheEsp";
 String ap_pass = "nospoonthereis";
 
 String sta_ssid = "www.tkkrlab.nl";
 String sta_pass = "hax4or2the2paxor3";
+
+stripcontrol_t *stripcontrol = {0};
 
 char mac[] = {'e','s','p','l','c','0'};
 
@@ -125,25 +128,8 @@ void setupSTA()
   printWifiStatus();
 }
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(0, INPUT);
-  pinMode(0, INPUT_PULLUP);
-  setupSTA();
-
-  server.on("/", handleRoot);
-  server.on("/ledsettings", handleLedSettings);
-  server.on("/wifisettings", handleWiFiSettings);
-  server.begin();
-  Serial.println("done setting up server");
-
-  // updating related.
-  Serial.setDebugOutput(true);
-  listener.begin(8266);
-}
-
-void loop() {
-  handleSketchUpdate();
+void wifiModeHandling()
+{
   if(!digitalRead(0))
   {
     moduleResetHandling();
@@ -163,5 +149,28 @@ void loop() {
       }
     }
   }
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(0, INPUT_PULLUP);
+  setupSTA();
+  Serial.println("done setting up pins, and WifiMode.");
+
+  server.on("/", handleRoot);
+  server.on("/ledsettings", handleLedSettings);
+  server.on("/wifisettings", handleWiFiSettings);
+  server.on("/stripcontrol", handleStripControl);
+  server.begin();
+  Serial.println("done setting up server");
+
+  // updating related.
+  Serial.setDebugOutput(true);
+  listener.begin(8266);
+}
+
+void loop() {
+  handleSketchUpdate();
+  wifiModeHandling();
   server.handleClient();
 }
