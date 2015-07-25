@@ -3,9 +3,8 @@
 #include <WiFiUdp.h>
 #include <ESP8266mDNS.h>
 
-#include "analogLedStrip.h"
-#include "stripcontrol.h"
 #include "html.h"
+#include "stripcontrol.h"
 
 String ap_ssid = "TheEsp";
 String ap_pass = "nospoonthereis";
@@ -19,7 +18,8 @@ stripcontrol_t stripcontrol = {
   .brightness = 0, 
   .varZero = 0,
   .varOne = 0,
-  .varTwo = 0
+  .varTwo = 0,
+  .changed = false
 };
 
 char mac[] = {'e','s','p','l','c','0'};
@@ -176,11 +176,14 @@ void setup() {
   Serial.setDebugOutput(true);
   listener.begin(8266);
 
-  setupAnalogStrip();
+  setupStrips();
 }
 
 void loop() {
-  writeRgb(255, 255, 255);
+  // handled in the stripcontrol handler
+  // for now.
+  // handleStrips();
+  
   handleSketchUpdate();
   wifiModeHandling();
   server.handleClient();

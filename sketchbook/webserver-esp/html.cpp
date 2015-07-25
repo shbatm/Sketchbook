@@ -1,4 +1,5 @@
 #include "html.h"
+#include "stripcontrol.h"
 
 String css =
 "<style>"
@@ -69,39 +70,20 @@ String divFooter =
 void handleStripControl()
 {
   String text = "protocol debug: <br>";
-  for(int i = 0;i < server.args(); i++)
+  Serial.println("received data");
+  if(server.args())
   {
-    text += server.argName(i) + ": " + server.arg(i) + "<br>";
-    if(server.argName(i) == "pincode")
-    {
-      stripcontrol.pincode = server.arg(i).toInt();
-    }
-    else if(server.argName(i) == "effect")
-    {
-      stripcontrol.effect = server.arg(i).toInt();
-    }
-    else if(server.argName(i) == "brightness")
-    {
-      stripcontrol.brightness = server.arg(i).toInt();
-    }
-    else if(server.argName(i) == "var0")
-    {
-      stripcontrol.varZero = server.arg(i).toInt();
-    }
-    else if(server.argName(i) == "var1")
-    {
-      stripcontrol.varOne = server.arg(i).toInt();
-    }
-    else if(server.argName(i) == "var2")
-    {
-      stripcontrol.varTwo = server.arg(i).toInt();
-    }
-    else
-    {
-      text = "";
-    }
+    stripcontrol.pincode = server.arg("pincode").toInt();
+    stripcontrol.effect = server.arg("effect").toInt();
+    stripcontrol.brightness = server.arg("brightness").toInt();
+    stripcontrol.varZero = server.arg("var0").toInt();
+    stripcontrol.varOne = server.arg("var1").toInt();
+    stripcontrol.varTwo = server.arg("var2").toInt();
+    stripcontrol.changed = true;
+    debugPrintStripControl();
   }
   server.send(200, "text/html", "<h1>LedControl</h1><br>" + text);
+  handleStrips();
 }
 
 void handleWiFiSettings()

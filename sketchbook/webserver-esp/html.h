@@ -1,5 +1,5 @@
-#ifndef HTMLROOT_H
-#define HTMLROOT_H
+#ifndef HTML_H
+#define HTML_H
 
 #include <Arduino.h>
 #include <WiFiClient.h>

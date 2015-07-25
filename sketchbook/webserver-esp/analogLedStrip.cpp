@@ -2,17 +2,17 @@
 
 void setupAnalogStrip()
 {
-    pinMode(RED, OUTPUT);
-    pinMode(GREEN, OUTPUT);
-    pinMode(BLUE, OUTPUT);
-    analogWrite(RED, 0);
-    analogWrite(GREEN, 0);
-    analogWrite(BLUE, 0);
+    pinMode(REDPIN, OUTPUT);
+    pinMode(GREENPIN, OUTPUT);
+    pinMode(BLUEPIN, OUTPUT);
+    analogWrite(REDPIN, 0);
+    analogWrite(GREENPIN, 0);
+    analogWrite(BLUEPIN, 0);
 }
 
 void writeRgb(int rval, int gval, int bval)
 {
-    analogWrite(RED, rval);
-    analogWrite(GREEN, gval);
-    analogWrite(BLUE, bval);
+    analogWrite(REDPIN, rval);
+    analogWrite(GREENPIN, gval);
+    analogWrite(BLUEPIN, bval);
 }

@@ -3,9 +3,9 @@
 
 #include <Arduino.h>
 
-#define RED 5
-#define GREEN 4
-#define BLUE 2
+#define REDPIN 5
+#define GREENPIN 4
+#define BLUEPIN 2
 
 // setup pin related things.
 void setupAnalogStrip();
