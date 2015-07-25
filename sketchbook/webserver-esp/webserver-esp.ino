@@ -181,9 +181,8 @@ void setup() {
 
 void loop() {
   // handled in the stripcontrol handler
-  // for now.
-  // handleStrips();
-  
+  // and here for now.
+  handleStrips();
   handleSketchUpdate();
   wifiModeHandling();
   server.handleClient();

@@ -1,6 +1,47 @@
 #include "stripcontrol.h"
 
 int stripselect;
+int colors[3] = {0, 0, 0};
+int value = 0;
+int pledselect = 0;
+int ledselect = 0;
+
+unsigned long ccurrent = 0;
+unsigned long cprevious = 0;
+int cinterval = 10;
+
+void colorinc()
+{
+    value++;
+    if(value == 255)
+    {
+        ledselect++;
+        value = 1;
+        if(ledselect == 3)
+        {
+            ledselect = 0;
+            pledselect = 2;
+        }
+        else
+        {
+            pledselect = ledselect - 1;
+        }
+    }
+    colors[pledselect] = 255 - value;
+    colors[ledselect] = value;
+    // char fmtstr[100];
+    // sprintf(fmtstr,
+    //         "\n"
+    //         "pledselect: %d\n"
+    //         "ledselect:  %d\n"
+    //         "value:      %d\n"
+    //         "255 - value:%d\n",
+    //         pledselect,
+    //         ledselect,
+    //         value,
+    //         255-value);
+    // Serial.println(fmtstr);
+}
 
 void setupStrips()
 {
@@ -24,7 +65,22 @@ void handleStrips()
     }
     else if(stripcontrol.effect == FADING)
     {
-
+        if(stripselect == ANALOGSTRIP)
+        {
+            ccurrent = millis();
+            if((ccurrent - cprevious) >= cinterval)
+            {
+                cprevious = ccurrent;
+                colorinc();
+            }
+            cinterval = stripcontrol.varZero+1;
+            int r = colors[RED];
+            int g = colors[GREEN];
+            int b = colors[BLUE];
+            writeRgb(r, g, b);
+        }
+        else if(stripselect == WS2801);
+        else if(stripselect == WS2812);
     }
     else if(stripcontrol.effect == DIGITALFADING)
     {

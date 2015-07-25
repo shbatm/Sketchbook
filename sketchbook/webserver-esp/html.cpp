@@ -82,8 +82,8 @@ void handleStripControl()
     stripcontrol.changed = true;
     debugPrintStripControl();
   }
+  
   server.send(200, "text/html", "<h1>LedControl</h1><br>" + text);
-  handleStrips();
 }
 
 void handleWiFiSettings()

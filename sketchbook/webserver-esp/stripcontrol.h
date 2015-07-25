@@ -2,6 +2,7 @@
 #define STRIPCONTROL_H
 
 #include <Arduino.h>
+#include <Ticker.h>
 #include "analogLedStrip.h"
 
 // request.
