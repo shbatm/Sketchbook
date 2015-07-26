@@ -22,7 +22,7 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
-char mac[] = {'e','s','p','l','c','0'};
+// char mac[] = {'e','s','p','l','c','0'};
 
 WiFiUDP listener;
 
@@ -182,8 +182,8 @@ void setup() {
 void loop() {
   // handled in the stripcontrol handler
   // and here for now.
+  server.handleClient();
   handleStrips();
   handleSketchUpdate();
   wifiModeHandling();
-  server.handleClient();
 }

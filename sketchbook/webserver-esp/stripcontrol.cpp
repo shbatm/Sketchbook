@@ -13,7 +13,7 @@ int cinterval = 10;
 void colorinc()
 {
     value++;
-    if(value == 255)
+    if(value > 255)
     {
         ledselect++;
         value = 1;
@@ -74,9 +74,10 @@ void handleStrips()
                 colorinc();
             }
             cinterval = stripcontrol.varZero+1;
-            int r = colors[RED];
-            int g = colors[GREEN];
-            int b = colors[BLUE];
+            float brightnessFactor = (float)(((float)stripcontrol.brightness)/100);
+            int r = colors[RED] * brightnessFactor;
+            int g = colors[GREEN] * brightnessFactor;
+            int b = colors[BLUE] * brightnessFactor;
             writeRgb(r, g, b);
         }
         else if(stripselect == WS2801);

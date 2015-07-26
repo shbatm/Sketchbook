@@ -69,11 +69,15 @@ String divFooter =
 
 void handleStripControl()
 {
-  String text = "protocol debug: <br>";
+  String debug = "protocol debug: <br>";
   Serial.println("received data");
   if(server.args())
   {
-    stripcontrol.pincode = server.arg("pincode").toInt();
+    for(int i = 0;i < server.args(); i++)
+    {
+      debug += server.argName(i) + ": " + server.arg(i) + "<br>";
+    }
+    stripcontrol.pincode = server.arg("pin").toInt();
     stripcontrol.effect = server.arg("effect").toInt();
     stripcontrol.brightness = server.arg("brightness").toInt();
     stripcontrol.varZero = server.arg("var0").toInt();
@@ -82,8 +86,23 @@ void handleStripControl()
     stripcontrol.changed = true;
     debugPrintStripControl();
   }
-  
-  server.send(200, "text/html", "<h1>LedControl</h1><br>" + text);
+  handleStrips();
+
+  String htmlStripControl = 
+  "<!DOCTYPE html>"
+  "<html>"
+  "<title> esp-light page. </title>"
+  "<head>" + css + "</head>"
+  "<body>" +
+  divHeader +
+  divNav +
+  "<h1>StripControl</h1><br>" +
+  debug +
+  divFooter + 
+  "</body>"
+  "</html>"
+  ;
+  server.send(200, "text/html", htmlStripControl);
 }
 
 void handleWiFiSettings()
