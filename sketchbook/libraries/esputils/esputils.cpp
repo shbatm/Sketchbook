@@ -3,7 +3,7 @@
 // check for connection by checking for ip
 void checkConnected()
 {
-  pinMode(0, INPUT_PULLDOWN);
+  pinMode(0, INPUT_PULLUP);
   // wait wile we have not gotten an ip
   while(WiFi.status() != WL_CONNECTED)
   {

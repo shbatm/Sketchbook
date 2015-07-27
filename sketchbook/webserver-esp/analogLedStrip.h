@@ -15,5 +15,5 @@ void setupAnalogStrip();
     with value range 0-255.
 */
 void writeRgb(int, int, int);
-
+void fadeRgb(int, int);
 #endif
