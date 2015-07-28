@@ -2,6 +2,7 @@
 #include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
 #include <ESP8266mDNS.h>
+#include <EEPROM.h>
 
 #include "html.h"
 #include "stripcontrol.h"
@@ -13,6 +14,8 @@ String ap_pass = "nospoonthereis";
 String sta_ssid = "www.tkkrlab.nl";
 String sta_pass = "hax4or2the2paxor3";
 
+int accesPin = 0;
+
 stripcontrol_t stripcontrol = {
   .pincode = 0,
   .effect = 0,
@@ -23,9 +26,66 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
+enum {STA_MODE, AP_MODE};
+int currentMode = STA_MODE;
+
 int stripselect = WS2812;
 
 WiFiUDP listener;
+
+ESP8266WebServer server(80);
+
+int storeString(String string, int addr)
+{
+  const char *str = string.c_str();
+  int str_len = strlen(str);
+  int i;
+  for(i = 0; i < str_len; i++)
+  {
+    EEPROM.write(addr+i, str[i]);
+  }
+  i++;
+  EEPROM.write(addr+i, '\0');
+  return i;
+}
+
+int storeInt(int value, int addr)
+{
+  int i;
+  for(i = 0; i < sizeof(value); i++)
+  {
+    EEPROM.write(addr+i, (value>>(i*8))&0xFF);
+  }
+  return i;
+}
+
+void settingsStore()
+{
+  /*
+  stored are:
+  ap ssid,
+  ap pass,
+  sta ssid,
+  sta pass,
+  accesPin,
+  stripselect,
+  currentMode
+  */
+  int eeAddr = 0;
+  eeAddr += storeString(ap_ssid, eeAddr);
+  eeAddr += storeString(ap_pass, eeAddr);
+  eeAddr += storeString(sta_ssid, eeAddr);
+  eeAddr += storeString(sta_pass, eeAddr);
+  eeAddr += storeInt(accesPin, eeAddr);
+  eeAddr += storeInt(stripselect, eeAddr);
+  eeAddr += storeInt(currentMode, eeAddr);
+  EEPROM.commit();
+}
+
+void settingsLoad()
+{
+
+}
 
 void handleSketchUpdate()
 {
@@ -53,9 +113,6 @@ void handleSketchUpdate()
   }
 }
 
-enum {STA_MODE, AP_MODE};
-int currentMode = STA_MODE;
-
 String iptostr(IPAddress ip)
 {
   String ipstr;
@@ -73,8 +130,6 @@ String iptostr(IPAddress ip)
   }
   return ipstr;
 }
-
-ESP8266WebServer server(80);
 
 void moduleResetHandling(void)
 {
@@ -162,6 +217,8 @@ void wifiModeHandling()
 
 void setup() {
   Serial.begin(115200);
+  EEPROM.begin(1024);
+  settingsStore();
   pinMode(0, INPUT_PULLUP);
   setupSTA();
   Serial.println("done setting up pins, and WifiMode.");
