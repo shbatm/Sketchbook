@@ -1,27 +1,19 @@
-#include <WiFiUdp.h>
-#include <ESP8266WiFi.h>
+#include "ws2801.h"
 
-#include "initials.h"
-#include <otaupload.h>
-#include <esputils.h>
+static uint8_t *buffer[3] = {NULL, NULL, NULL};
 
-#include <SPI.h>
+static int striplen;
 
-#define NUMPIXELS 16
-uint8_t buffer[3][NUMPIXELS];
+static int colors[3] = {0, 0, 0};
+static int value = 0;
+static int pledselect = 0;
+static int ledselect = 0;
 
-int striplen = NUMPIXELS;
+static unsigned long ccurrent = 0;
+static unsigned long cprevious = 0;
+static int cinterval = 10;
 
-int colors[3] = {0, 0, 0};
-int value = 0;
-int pledselect = 0;
-int ledselect = 0;
-
-unsigned long ccurrent = 0;
-unsigned long cprevious = 0;
-int cinterval = 10;
-
-void colorinc()
+static void colorinc()
 {
     value++;
     if(value > 255)
@@ -46,6 +38,25 @@ void setupWS2801(int freq, int len)
 {
     SPI.begin();
     SPI.setFrequency(1e6);
+    striplen = len;
+    // allocate space if run first time else free and allocate.
+    if(buffer[0] == NULL && buffer[1] == NULL && buffer[2] == NULL)
+    {
+        // allocate space for buffer
+        buffer[0] = (uint8_t *)malloc(sizeof(uint8_t)*len);
+        buffer[1] = (uint8_t *)malloc(sizeof(uint8_t)*len);
+        buffer[2] = (uint8_t *)malloc(sizeof(uint8_t)*len);
+    }
+    else
+    {
+        free(buffer[0]);
+        free(buffer[1]);
+        free(buffer[2]);
+        // allocate space for buffer
+        buffer[0] = (uint8_t *)malloc(sizeof(uint8_t)*len);
+        buffer[1] = (uint8_t *)malloc(sizeof(uint8_t)*len);
+        buffer[2] = (uint8_t *)malloc(sizeof(uint8_t)*len);
+    }
 }
 
 void setWS2801Pixel(int pos, int r, int g, int b)
@@ -89,26 +100,4 @@ void updateWS2801()
         SPI.transfer(buffer[1][i]);
         SPI.transfer(buffer[2][i]);
     }
-}
-
-void setup()
-{
-    Serial.begin(115200);
-
-    setupWS2801(1e6, NUMPIXELS);
-
-    setupSTA();
-    setupOta();
-    setWS2801Strip(255, 255, 255);
-
-    Serial.println("\nEntering Loop");
-}
-
-void loop()
-{
-    handleSketchUpdate();
-    fadeWS2801(100, 100);
-    setWS2801Strip(colors[0], colors[1], colors[2]);
-    updateWS2801();
-    delay(1);
 }

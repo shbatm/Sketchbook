@@ -5,6 +5,7 @@
 
 #include "html.h"
 #include "stripcontrol.h"
+#include "ws2801.h"
 
 String ap_ssid = "TheEsp";
 String ap_pass = "nospoonthereis";
@@ -22,7 +23,7 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
-// char mac[] = {'e','s','p','l','c','0'};
+int stripselect = WS2812;
 
 WiFiUDP listener;
 

@@ -16,4 +16,5 @@ void setupAnalogStrip();
 */
 void writeRgb(int, int, int);
 void fadeRgb(int, int);
+
 #endif

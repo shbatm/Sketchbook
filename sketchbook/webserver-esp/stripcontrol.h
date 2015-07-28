@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <Ticker.h>
 #include "analogLedStrip.h"
+#include "ws2801.h"
+#include "ws2812.h"
 
 // request.
 // http://10.42.4.139/stripcontrol?pincode=1234&effect=0&brightness=128&var0=128&var1=64&var2=42
@@ -32,6 +34,7 @@ typedef struct {
 } stripcontrol_t;
 
 extern stripcontrol_t stripcontrol;
+extern int stripselect;
 
 void setupStrips();
 void handleStrips();

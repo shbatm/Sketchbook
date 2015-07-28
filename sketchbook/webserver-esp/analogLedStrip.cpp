@@ -1,14 +1,14 @@
 #include "analogLedStrip.h"
 #include "stripcontrol.h"
 
-int colors[3] = {0, 0, 0};
-int value = 0;
-int pledselect = 0;
-int ledselect = 0;
+static int colors[3] = {0, 0, 0};
+static int value = 0;
+static int pledselect = 0;
+static int ledselect = 0;
 
-unsigned long ccurrent = 0;
-unsigned long cprevious = 0;
-int cinterval = 10;
+static unsigned long ccurrent = 0;
+static unsigned long cprevious = 0;
+static int cinterval = 10;
 
 void setupAnalogStrip()
 {
@@ -27,7 +27,7 @@ void writeRgb(int rval, int gval, int bval)
     analogWrite(BLUEPIN, bval);
 }
 
-void colorinc()
+static void colorinc()
 {
     value++;
     if(value > 255)
