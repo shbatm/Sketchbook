@@ -11,8 +11,8 @@
 String ap_ssid = "TheEsp";
 String ap_pass = "nospoonthereis";
 
-String sta_ssid = "www.tkkrlab.nl";
-String sta_pass = "hax4or2the2paxor3";
+String sta_ssid = "HuisVanDerTuuk";
+String sta_pass = "10SamSung@H";
 
 int accesPin = 0;
 
@@ -35,28 +35,42 @@ WiFiUDP listener;
 
 ESP8266WebServer server(80);
 
-int storeString(String string, int addr)
+// stores a string into eeprom pluss nullterminator.
+void storeString(String string, int& addr)
 {
+  // get a reference to the original c string.
   const char *str = string.c_str();
+  // get the length of that string.
   int str_len = strlen(str);
   int i;
+  // loop over the length of the string.
+  // and store the bytes.
   for(i = 0; i < str_len; i++)
   {
+    // write the bytes into the eeprom (flash)
     EEPROM.write(addr+i, str[i]);
   }
+  // also store the last zero terminator.
+  // as we cant read the length out of eeprom.
   i++;
   EEPROM.write(addr+i, '\0');
-  return i;
+  addr += i;
 }
 
-int storeInt(int value, int addr)
+void storeInt(int value, int& addr)
 {
   int i;
   for(i = 0; i < sizeof(value); i++)
   {
     EEPROM.write(addr+i, (value>>(i*8))&0xFF);
   }
-  return i;
+  addr += i;
+}
+
+String loadString(int& addr)
+{
+  String text = "";
+  return text;
 }
 
 void settingsStore()
@@ -72,19 +86,21 @@ void settingsStore()
   currentMode
   */
   int eeAddr = 0;
-  eeAddr += storeString(ap_ssid, eeAddr);
-  eeAddr += storeString(ap_pass, eeAddr);
-  eeAddr += storeString(sta_ssid, eeAddr);
-  eeAddr += storeString(sta_pass, eeAddr);
-  eeAddr += storeInt(accesPin, eeAddr);
-  eeAddr += storeInt(stripselect, eeAddr);
-  eeAddr += storeInt(currentMode, eeAddr);
+  storeString(ap_ssid, eeAddr);
+  storeString(ap_pass, eeAddr);
+  storeString(sta_ssid, eeAddr);
+  storeString(sta_pass, eeAddr);
+  storeInt(accesPin, eeAddr);
+  storeInt(stripselect, eeAddr);
+  storeInt(currentMode, eeAddr);
   EEPROM.commit();
 }
 
 void settingsLoad()
 {
-
+  int eeAddr = 0;
+  Serial.println();
+  Serial.println(loadString(eeAddr));
 }
 
 void handleSketchUpdate()
@@ -147,9 +163,9 @@ void moduleResetHandling(void)
       pinMode(0, OUTPUT);
       digitalWrite(0, LOW);
       buttonprev = buttoncount;
-      for(;;);
+      ESP.reset();
     }
-    delay(0);
+    delay(1);
   }
 }
 
@@ -219,8 +235,18 @@ void setup() {
   Serial.begin(115200);
   EEPROM.begin(1024);
   settingsStore();
+
   pinMode(0, INPUT_PULLUP);
-  setupSTA();
+
+  if(currentMode == STA_MODE)
+  {
+    setupSTA();
+  }
+  else
+  {
+    setupAP();
+  }
+
   Serial.println("done setting up pins, and WifiMode.");
 
   server.on("/", handleRoot);
