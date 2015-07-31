@@ -11,10 +11,10 @@
 String ap_ssid = "TheEsp";
 String ap_pass = "nospoonthereis";
 
-String sta_ssid = "HuisVanDerTuuk";
-String sta_pass = "10SamSung@H";
+String sta_ssid = "www.tkkrlab.nl";
+String sta_pass = "apass";
 
-int accesPin = 0;
+int accesPin = 1234;
 
 stripcontrol_t stripcontrol = {
   .pincode = 0,
@@ -44,25 +44,22 @@ void storeString(String string, int& addr)
   int str_len = strlen(str);
   int i;
   // loop over the length of the string.
-  // and store the bytes.
-  for(i = 0; i < str_len; i++)
+  // and store the bytes. and zero terminator.
+  for(i = 0; i <= str_len; i++)
   {
     // write the bytes into the eeprom (flash)
     EEPROM.write(addr+i, str[i]);
   }
-  // also store the last zero terminator.
-  // as we cant read the length out of eeprom.
-  i++;
-  EEPROM.write(addr+i, '\0');
   addr += i;
 }
 
 void storeInt(int value, int& addr)
 {
+  char fmtstr[100];
   int i;
   for(i = 0; i < sizeof(value); i++)
   {
-    EEPROM.write(addr+i, (value>>(i*8))&0xFF);
+    EEPROM.write(addr+i, (value>>(i*8)&0xff));
   }
   addr += i;
 }
@@ -70,7 +67,28 @@ void storeInt(int value, int& addr)
 String loadString(int& addr)
 {
   String text = "";
+  char read = EEPROM.read(addr);
+  while(read != '\0')
+  {
+    text += read;
+    addr++;
+    read = EEPROM.read(addr);
+  }
+  addr++; //acount for zero terminator.
   return text;
+}
+
+int loadInt(int &addr)
+{
+  int value = 0;
+  int i;
+  for(i = 0; i < 0x04; i++)
+  {
+    char byte = EEPROM.read(addr+i);
+    value |= (byte << (8*i));
+  }
+  addr += i;
+  return value;
 }
 
 void settingsStore()
@@ -99,8 +117,21 @@ void settingsStore()
 void settingsLoad()
 {
   int eeAddr = 0;
-  Serial.println();
-  Serial.println(loadString(eeAddr));
+  // Serial.println();
+  // Serial.println(loadString(eeAddr));
+  // Serial.println(loadString(eeAddr));
+  // Serial.println(loadString(eeAddr));
+  // Serial.println(loadString(eeAddr));
+  // Serial.println(loadInt(eeAddr));
+  // Serial.println(loadInt(eeAddr));
+  // Serial.println(loadInt(eeAddr));
+  ap_ssid = loadString(eeAddr);
+  ap_pass = loadString(eeAddr);
+  sta_ssid = loadString(eeAddr);
+  sta_pass = loadString(eeAddr);
+  accesPin = loadInt(eeAddr);
+  stripselect = loadInt(eeAddr);
+  currentMode = loadInt(eeAddr);
 }
 
 void handleSketchUpdate()
@@ -188,21 +219,32 @@ void printWifiStatus() {
 
 void setupAP()
 {
+  wdt_disable();
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ap_ssid.c_str(), ap_pass.c_str());
   Serial.println();
   IPAddress myIP = WiFi.softAPIP();
   Serial.println(myIP);
+  wdt_enable(100);
 }
 
 void setupSTA()
 {
   WiFi.mode(WIFI_STA);
   WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
+
+  int i = 0;
   while(WiFi.status() != WL_CONNECTED)
   {
     delay(500);
     Serial.print(".");
+    i++;
+    if(i == 10)
+    {
+      currentMode == AP_MODE;
+      setupAP();
+      return;
+    }
   }
   Serial.println();
   printWifiStatus();
@@ -235,9 +277,11 @@ void setup() {
   Serial.begin(115200);
   EEPROM.begin(1024);
   settingsStore();
+  settingsLoad();
 
   pinMode(0, INPUT_PULLUP);
 
+  WiFi.disconnect();
   if(currentMode == STA_MODE)
   {
     setupSTA();

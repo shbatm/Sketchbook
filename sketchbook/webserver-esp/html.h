@@ -13,9 +13,13 @@ extern String sta_pass;
 extern String ap_ssid;
 extern String ap_pass;
 
+extern int accesPin;
+
 extern ESP8266WebServer server;
 
 extern stripcontrol_t stripcontrol;
+
+extern void settingsStore();
 
 void handleStripControl();
 void handleWiFiSettings();

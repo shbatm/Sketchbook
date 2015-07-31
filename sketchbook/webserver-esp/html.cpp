@@ -30,8 +30,8 @@ String css =
 "    padding:5px;"
 "}"
 "#divWifiSettings {"
-"    width:400px;"
-"    height:330px;"
+"    width:auto;"
+"    height:auto;"
 "    border-collapse: collapse;"
 "    color:black;"
 "    border-style: solid;"
@@ -108,28 +108,43 @@ void handleStripControl()
 void handleWiFiSettings()
 {
   // get inputs.
-  for(int i = 0;i < server.args(); i++)
+  if(server.args() && server.arg("Confirm"))
   {
-    if(server.argName(i) == "ssid");
-    else if(server.argName(i) == "pass");
-    else if(server.argName(i) == "confirmSta");
-    else if(server.argName(i) == "bssid");
-    else if(server.argName(i) == "bpass");
-    else if(server.argName(i) == "confirmAp");
+    sta_ssid = server.arg("ssid");
+    sta_pass = server.arg("pass");
+    ap_ssid = server.arg("bssid");
+    ap_pass = server.arg("bpass");
+    accesPin = server.arg("accesPin").toInt();
+    settingsStore();
   }
+
+  // for(int i = 0;i < server.args(); i++)
+  // {
+  //   if(server.argName(i) == "ssid");
+  //   else if(server.argName(i) == "pass");
+  //   else if(server.argName(i) == "confirmSta");
+  //   else if(server.argName(i) == "bssid");
+  //   else if(server.argName(i) == "bpass");
+  //   else if(server.argName(i) == "confirmAp");
+  // }
   // serve page.
   String InputTableSta = 
   "ssid: <br>"
   "<input value=\"" + sta_ssid + "\" type=\"text\" name=\"ssid\"><br>"
   "password: <br>"
-  "<input value=\"\" type=\"password\" name=\"pass\"><br>"
+  "<input value=\"" + sta_pass + "\" type=\"text\" name=\"pass\"><br>"
   ;
 
   String InputTableAp =
   "ssid: <br>"
   "<input value=\"" + ap_ssid + "\" type=\"text\" name=\"bssid\"><br>"
   "password: <br>"
-  "<input value=\"\" type=\"password\" name=\"bpass\"><br>"
+  "<input value=\"" + ap_pass + "\" type=\"text\" name=\"bpass\"><br>"
+  ;
+
+  String InputTableCode = 
+  "espLight ID: <br>"
+  "<input value=\"" + String(accesPin) + "\" type=\"text\" name=\"accesPin\"><br>"
   ;
 
   String divWifiSettings = 
@@ -139,7 +154,9 @@ void handleWiFiSettings()
   InputTableSta +
   "<h3>Acces Point settings:</h3>" +
   InputTableAp + 
-  "<input type=\"submit\" value=\"Confirm\" name=\"confirmSta\">"
+  "<h3> access settings: </h3>" +
+  InputTableCode +
+  "<input type=\"submit\" value=\"Confirm\" name=\"confirm\">"
   "</form>"
   "</div>"
   ;
