@@ -28,7 +28,7 @@ void handleStrips()
         else if(stripselect == WS2812)
         {
             setWS2812Strip(r, g, b);
-            updateWS2812();
+            // updateWS2812();
         }
     }
     else if(stripcontrol.effect == FADING)

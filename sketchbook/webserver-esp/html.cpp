@@ -117,16 +117,6 @@ void handleWiFiSettings()
     accesPin = server.arg("accesPin").toInt();
     settingsStore();
   }
-
-  // for(int i = 0;i < server.args(); i++)
-  // {
-  //   if(server.argName(i) == "ssid");
-  //   else if(server.argName(i) == "pass");
-  //   else if(server.argName(i) == "confirmSta");
-  //   else if(server.argName(i) == "bssid");
-  //   else if(server.argName(i) == "bpass");
-  //   else if(server.argName(i) == "confirmAp");
-  // }
   // serve page.
   String InputTableSta = 
   "ssid: <br>"
@@ -179,7 +169,20 @@ void handleWiFiSettings()
 
 void handleLedSettings()
 {
-  server.send(200, "text/html", "<h1> led settings</h1>");
+  String htmlRoot = 
+  "<!DOCTYPE html>"
+  "<html>"
+  "<title> esp-light page. </title>"
+  "<head>"+css+"</head>"
+  "<body>" +
+  divHeader +
+  divNav +
+  divSection +
+  divFooter + 
+  "</body>"
+  "</html>"
+  ;
+  server.send(200, "text/html", htmlRoot);
 }
 
 void handleRoot()

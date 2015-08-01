@@ -12,7 +12,7 @@ String ap_ssid = "TheEsp";
 String ap_pass = "nospoonthereis";
 
 String sta_ssid = "www.tkkrlab.nl";
-String sta_pass = "apass";
+String sta_pass = "hax4or2the2paxor3";
 
 int accesPin = 1234;
 
@@ -27,7 +27,7 @@ stripcontrol_t stripcontrol = {
 };
 
 enum {STA_MODE, AP_MODE};
-int currentMode = STA_MODE;
+int currentMode = AP_MODE;
 
 int stripselect = WS2812;
 
@@ -219,13 +219,11 @@ void printWifiStatus() {
 
 void setupAP()
 {
-  wdt_disable();
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ap_ssid.c_str(), ap_pass.c_str());
   Serial.println();
   IPAddress myIP = WiFi.softAPIP();
   Serial.println(myIP);
-  wdt_enable(100);
 }
 
 void setupSTA()
@@ -274,20 +272,21 @@ void wifiModeHandling()
 }
 
 void setup() {
+  // ESP.eraseConfig();
   Serial.begin(115200);
   EEPROM.begin(1024);
   settingsStore();
   settingsLoad();
 
-  pinMode(0, INPUT_PULLUP);
-
   WiFi.disconnect();
   if(currentMode == STA_MODE)
   {
+    currentMode = STA_MODE;
     setupSTA();
   }
   else
   {
+    currentMode = AP_MODE;
     setupAP();
   }
 
@@ -300,7 +299,7 @@ void setup() {
   server.begin();
   Serial.println("done setting up server");
 
-  // updating related.
+  // // updating related.
   Serial.setDebugOutput(true);
   listener.begin(8266);
 
@@ -314,4 +313,5 @@ void loop() {
   handleStrips();
   handleSketchUpdate();
   wifiModeHandling();
+  yield();
 }
