@@ -78,5 +78,6 @@ void fadeWS2812(int speed, int brightness)
 
 void updateWS2812()
 {
-    strip->Show();
+    /* bug in strip.show() that doesn't allow this to run acces point mode.*/
+    // strip->Show();
 }
