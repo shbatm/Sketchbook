@@ -155,7 +155,7 @@ void handleSketchUpdate()
   }
 }
 
-void broadcastDiscover()
+void broadcastDiscovery()
 {
   return;
 }
@@ -163,14 +163,19 @@ void broadcastDiscover()
 // ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236
 String variables[6][1];
 
-String getAlphaNumString(String data)
+String getAlphaNumString(String &data)
 {
-
+  String text = "";
+  return text;
 }
 
 void parseEffectPacket(String data)
 {
-
+  String varname = getAlphaNumString(data);
+  Serial.println(varname);
+  Serial.println(data);
+  // String value = getAlphaNumString(data);
+  // Serial.println(value);
 }
 
 void printPacketInfo(int packetSize)
@@ -185,9 +190,9 @@ void printPacketInfo(int packetSize)
 String readPacketContents(WiFiUDP listener)
 {
   String received = "";
-  while(effectListener.available())
+  while(listener.available())
   {
-    received += effectListener.read();
+    received += (char)listener.read();
   }
   return received;
 }
@@ -204,6 +209,8 @@ void handleEffectUpdate()
       // got a http string.
       Serial.println("got effect string.");
       received = readPacketContents(effectListener);
+      Serial.println(received);
+      parseEffectPacket(received);
     }
     else
     {
@@ -213,7 +220,7 @@ void handleEffectUpdate()
       if(String("EspFind") == received)
       {
         Serial.println("got a find request");
-        broadcastDiscover();
+        broadcastDiscovery();
       }
     }
   }
@@ -364,7 +371,6 @@ void setup() {
   effectListener.begin(1337);
 
   setupStrips();
-  Serial.println(ESP.getFreeHeap());
 }
 
 unsigned long currentHeapVal = 0;
