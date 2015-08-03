@@ -13,6 +13,8 @@ String ap_pass = "nospoonthereis";
 
 String sta_ssid = "www.tkkrlab.nl";
 String sta_pass = "hax4or2the2paxor3";
+// String sta_ssid = "HuisVanDerTuuk";
+// String sta_pass = "10SamSung@H";
 
 int accesPin = 1234;
 
@@ -27,11 +29,12 @@ stripcontrol_t stripcontrol = {
 };
 
 enum {STA_MODE, AP_MODE};
-int currentMode = AP_MODE;
+int currentMode = STA_MODE;
 
 int stripselect = WS2812;
 
-WiFiUDP listener;
+WiFiUDP uploadListener;
+WiFiUDP effectListener;
 
 ESP8266WebServer server(80);
 
@@ -117,14 +120,6 @@ void settingsStore()
 void settingsLoad()
 {
   int eeAddr = 0;
-  // Serial.println();
-  // Serial.println(loadString(eeAddr));
-  // Serial.println(loadString(eeAddr));
-  // Serial.println(loadString(eeAddr));
-  // Serial.println(loadString(eeAddr));
-  // Serial.println(loadInt(eeAddr));
-  // Serial.println(loadInt(eeAddr));
-  // Serial.println(loadInt(eeAddr));
   ap_ssid = loadString(eeAddr);
   ap_pass = loadString(eeAddr);
   sta_ssid = loadString(eeAddr);
@@ -136,13 +131,13 @@ void settingsLoad()
 
 void handleSketchUpdate()
 {
-  int cb = listener.parsePacket();
+  int cb = uploadListener.parsePacket();
   if(cb)
   {
-    IPAddress remote = listener.remoteIP();
-    int cmd  = listener.parseInt();
-    int port = listener.parseInt();
-    int sz   = listener.parseInt();
+    IPAddress remote = uploadListener.remoteIP();
+    int cmd  = uploadListener.parseInt();
+    int port = uploadListener.parseInt();
+    int sz   = uploadListener.parseInt();
     Serial.println("Got update: ");
     Serial.printf("%d %d %d\r\n", cmd, port, sz);
     WiFiClient cl;
@@ -151,11 +146,75 @@ void handleSketchUpdate()
       Serial.println("failed to connect.");
       ESP.reset();
     }
-    listener.stop();
+    uploadListener.stop();
     if(!ESP.updateSketch(cl, sz))
     {
       Serial.println("Update failed.");
       ESP.reset();
+    }
+  }
+}
+
+void broadcastDiscover()
+{
+  return;
+}
+
+// ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236
+String variables[6][1];
+
+String getAlphaNumString(String data)
+{
+
+}
+
+void parseEffectPacket(String data)
+{
+
+}
+
+void printPacketInfo(int packetSize)
+{
+  Serial.printf("packet size: %d ", packetSize);
+  Serial.print("from: ");
+  Serial.print(effectListener.remoteIP());
+  Serial.printf(" port: %d\n", effectListener.remotePort());
+  Serial.println("got: ");
+}
+
+String readPacketContents(WiFiUDP listener)
+{
+  String received = "";
+  while(effectListener.available())
+  {
+    received += effectListener.read();
+  }
+  return received;
+}
+
+void handleEffectUpdate()
+{
+  String received;
+  int cb = effectListener.parsePacket();
+  if(cb)
+  {
+    printPacketInfo(cb);
+    if(effectListener.peek() == '?')
+    {
+      // got a http string.
+      Serial.println("got effect string.");
+      received = readPacketContents(effectListener);
+    }
+    else
+    {
+      received = readPacketContents(effectListener);
+      Serial.print("received: ");
+      Serial.println(received);
+      if(String("EspFind") == received)
+      {
+        Serial.println("got a find request");
+        broadcastDiscover();
+      }
     }
   }
 }
@@ -219,6 +278,7 @@ void printWifiStatus() {
 
 void setupAP()
 {
+  delay(1000);
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ap_ssid.c_str(), ap_pass.c_str());
   Serial.println();
@@ -228,9 +288,9 @@ void setupAP()
 
 void setupSTA()
 {
+  delay(1000);
   WiFi.mode(WIFI_STA);
   WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
-
   int i = 0;
   while(WiFi.status() != WL_CONNECTED)
   {
@@ -239,7 +299,7 @@ void setupSTA()
     i++;
     if(i == 10)
     {
-      currentMode == AP_MODE;
+      currentMode = AP_MODE;
       setupAP();
       return;
     }
@@ -255,6 +315,7 @@ void wifiModeHandling()
     moduleResetHandling();
     if(digitalRead(0))
     {
+      WiFi.disconnect();
       if(currentMode == STA_MODE)
       {
         currentMode = AP_MODE;
@@ -272,7 +333,6 @@ void wifiModeHandling()
 }
 
 void setup() {
-  // ESP.eraseConfig();
   Serial.begin(115200);
   EEPROM.begin(1024);
   settingsStore();
@@ -281,12 +341,10 @@ void setup() {
   WiFi.disconnect();
   if(currentMode == STA_MODE)
   {
-    currentMode = STA_MODE;
     setupSTA();
   }
-  else
+  else if(currentMode == AP_MODE)
   {
-    currentMode = AP_MODE;
     setupAP();
   }
 
@@ -299,19 +357,28 @@ void setup() {
   server.begin();
   Serial.println("done setting up server");
 
-  // // updating related.
+  // updating related.
   Serial.setDebugOutput(true);
-  listener.begin(8266);
+  uploadListener.begin(8266);
+
+  effectListener.begin(1337);
 
   setupStrips();
+  Serial.println(ESP.getFreeHeap());
 }
+
+unsigned long currentHeapVal = 0;
+unsigned long preHeapVal = 0;
 
 void loop() {
   // handled in the stripcontrol handler
   // and here for now.
   server.handleClient();
-  handleStrips();
+  if(currentMode == STA_MODE)
+  {
+    handleStrips();
+  }
   handleSketchUpdate();
+  handleEffectUpdate();
   wifiModeHandling();
-  yield();
 }
