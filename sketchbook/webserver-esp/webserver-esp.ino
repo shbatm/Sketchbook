@@ -166,14 +166,34 @@ String variables[6][1];
 String getAlphaNumString(String &data)
 {
   String text = "";
+  String tail = "";
+  if(data[0] == '?' || data[0] == '=' || data[0] == '&')
+  {
+    int i = 0;
+    while(isalnum(data[i+1]))
+    {
+      text += data[i+1];
+      i++;
+    }
+    i++;
+    while(data[i] != '\0')
+    {
+      tail += data[i];
+      i++;
+    }
+    tail += '\0';
+  }
+  data = tail;
   return text;
 }
 
 void parseEffectPacket(String data)
 {
-  String varname = getAlphaNumString(data);
-  Serial.println(varname);
-  Serial.println(data);
+  for(int i = 0; i < 6; i++)
+  {
+    String parameter = getAlphaNumString(data);
+    String argument = getAlphaNumString(data);
+  }
   // String value = getAlphaNumString(data);
   // Serial.println(value);
 }
@@ -344,6 +364,8 @@ void setup() {
   EEPROM.begin(1024);
   settingsStore();
   settingsLoad();
+
+  pinMode(0, INPUT);
 
   WiFi.disconnect();
   if(currentMode == STA_MODE)
