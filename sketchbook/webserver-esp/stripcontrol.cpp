@@ -11,33 +11,38 @@ void handleStrips()
 {
     // check which effect is select.
     // and do pattern dependend on ledstrip.
+    double brightfact = (stripcontrol.brightness+1)/100.0;
+    int r = ((double)stripcontrol.varZero)*brightfact;
+    int g = ((double)stripcontrol.varOne)*brightfact;
+    int b = ((double)stripcontrol.varTwo)*brightfact;
+    int speed = stripcontrol.varZero+1;
     if(stripcontrol.effect == RGBCOLORS)
     {
-        int r = stripcontrol.varZero;
-        int g = stripcontrol.varOne;
-        int b = stripcontrol.varTwo;
         if(stripselect == ANALOGSTRIP)
         {
             writeRgb(r, g, b);
+            delay(1);
         }
         else if(stripselect == WS2801)
         {
             setWS2801Strip(r, g, b);
             updateWS2801();
+            delay(1);
         }
         else if(stripselect == WS2812)
         {
             setWS2812Strip(r, g, b);
             updateWS2812();
+            delay(1);
         }
     }
     else if(stripcontrol.effect == FADING)
     {
-        int speed = stripcontrol.varZero+1;
-        int brightness = stripcontrol.brightness;
+        int brightness = stripcontrol.brightness+1;
         if(stripselect == ANALOGSTRIP)
         {
             fadeRgb(speed, brightness);
+            delay(1);
         }
         else if(stripselect == WS2801)
         {

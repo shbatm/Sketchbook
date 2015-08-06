@@ -8,6 +8,8 @@
 #include "stripcontrol.h"
 #include "ws2801.h"
 
+String board_name = "TkkrEsp-01";
+
 String ap_ssid = "TheEsp";
 String ap_pass = "nospoonthereis";
 
@@ -21,7 +23,7 @@ int accesPin = 1234;
 stripcontrol_t stripcontrol = {
   .pincode = 0,
   .effect = 0,
-  .brightness = 0, 
+  .brightness = 0,
   .varZero = 0,
   .varOne = 0,
   .varTwo = 0,
@@ -31,7 +33,7 @@ stripcontrol_t stripcontrol = {
 enum {STA_MODE, AP_MODE};
 int currentMode = STA_MODE;
 
-int stripselect = WS2812;
+int stripselect = ANALOGSTRIP;
 
 WiFiUDP uploadListener;
 WiFiUDP effectListener;
@@ -155,13 +157,21 @@ void handleSketchUpdate()
   }
 }
 
-void broadcastDiscovery()
+void findResponse(WiFiUDP listener)
 {
-  return;
+  listener.beginPacket(listener.remoteIP(), listener.remotePort());
+  listener.println(board_name);
+  Serial.print("Sending: ");
+  Serial.println(board_name);
+  Serial.print("to: ");
+  Serial.print(listener.remoteIP());
+  Serial.print(":");
+  Serial.println(listener.remotePort());
+  listener.endPacket();
 }
 
 // ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236
-String variables[6][1];
+String variables[6][2];
 
 String getAlphaNumString(String &data)
 {
@@ -181,10 +191,33 @@ String getAlphaNumString(String &data)
       tail += data[i];
       i++;
     }
-    tail += '\0';
   }
   data = tail;
   return text;
+}
+
+String effectArg(const char *par)
+{
+  for(int i = 0; i < 6; i++)
+  {
+    if(variables[i][0] == String(par))
+    {
+      return variables[i][1];
+    }
+  }
+  return String("");
+}
+
+void applyEffectData()
+{
+  stripcontrol.pincode = effectArg("pin").toInt();
+  stripcontrol.effect = effectArg("effect").toInt();
+  stripcontrol.brightness = effectArg("brightness").toInt();
+  stripcontrol.varZero = effectArg("var0").toInt();
+  stripcontrol.varOne = effectArg("var1").toInt();
+  stripcontrol.varTwo = effectArg("var2").toInt();
+  stripcontrol.changed = true;
+  debugPrintStripControl();
 }
 
 void parseEffectPacket(String data)
@@ -193,9 +226,9 @@ void parseEffectPacket(String data)
   {
     String parameter = getAlphaNumString(data);
     String argument = getAlphaNumString(data);
+    variables[i][0] = parameter;
+    variables[i][1] = argument;
   }
-  // String value = getAlphaNumString(data);
-  // Serial.println(value);
 }
 
 void printPacketInfo(int packetSize)
@@ -204,7 +237,6 @@ void printPacketInfo(int packetSize)
   Serial.print("from: ");
   Serial.print(effectListener.remoteIP());
   Serial.printf(" port: %d\n", effectListener.remotePort());
-  Serial.println("got: ");
 }
 
 String readPacketContents(WiFiUDP listener)
@@ -227,21 +259,19 @@ void handleEffectUpdate()
     if(effectListener.peek() == '?')
     {
       // got a http string.
-      Serial.println("got effect string.");
+      Serial.println("got effect string:");
       received = readPacketContents(effectListener);
       Serial.println(received);
       parseEffectPacket(received);
+      applyEffectData();
     }
     else
     {
       received = readPacketContents(effectListener);
       Serial.print("received: ");
       Serial.println(received);
-      if(String("EspFind") == received)
-      {
-        Serial.println("got a find request");
-        broadcastDiscovery();
-      }
+      Serial.println("got a find request");
+      findResponse(effectListener);
     }
   }
 }
@@ -395,17 +425,11 @@ void setup() {
   setupStrips();
 }
 
-unsigned long currentHeapVal = 0;
-unsigned long preHeapVal = 0;
-
 void loop() {
   // handled in the stripcontrol handler
   // and here for now.
   server.handleClient();
-  if(currentMode == STA_MODE)
-  {
-    handleStrips();
-  }
+  handleStrips();
   handleSketchUpdate();
   handleEffectUpdate();
   wifiModeHandling();

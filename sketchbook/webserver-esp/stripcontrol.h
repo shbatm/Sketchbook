@@ -30,7 +30,7 @@ typedef struct {
   int varZero;
   int varOne;
   int varTwo;
-  bool changed;
+  int changed;
 } stripcontrol_t;
 
 extern stripcontrol_t stripcontrol;
