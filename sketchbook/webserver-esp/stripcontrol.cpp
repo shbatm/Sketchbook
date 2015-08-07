@@ -21,19 +21,16 @@ void handleStrips()
         if(stripselect == ANALOGSTRIP)
         {
             writeRgb(r, g, b);
-            delay(1);
         }
         else if(stripselect == WS2801)
         {
             setWS2801Strip(r, g, b);
             updateWS2801();
-            delay(1);
         }
         else if(stripselect == WS2812)
         {
             setWS2812Strip(r, g, b);
             updateWS2812();
-            delay(1);
         }
     }
     else if(stripcontrol.effect == FADING)

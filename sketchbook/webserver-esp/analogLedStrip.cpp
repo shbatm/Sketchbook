@@ -12,6 +12,7 @@ static int cinterval = 10;
 
 void setupAnalogStrip()
 {
+    analogWriteRange(0xff);
     pinMode(REDPIN, OUTPUT);
     pinMode(GREENPIN, OUTPUT);
     pinMode(BLUEPIN, OUTPUT);

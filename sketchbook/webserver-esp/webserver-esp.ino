@@ -160,7 +160,7 @@ void handleSketchUpdate()
 void findResponse(WiFiUDP listener)
 {
   listener.beginPacket(listener.remoteIP(), listener.remotePort());
-  listener.println(board_name);
+  listener.print(board_name);
   Serial.print("Sending: ");
   Serial.println(board_name);
   Serial.print("to: ");
@@ -267,11 +267,17 @@ void handleEffectUpdate()
     }
     else
     {
+      Serial.println("got here");
       received = readPacketContents(effectListener);
       Serial.print("received: ");
       Serial.println(received);
       Serial.println("got a find request");
-      findResponse(effectListener);
+      Serial.print("received == EspFind: ");
+      Serial.println(String("EspFind") == received ? "True":"False");
+      if(String("EspFind") == received)
+      {
+        findResponse(effectListener);
+      }
     }
   }
 }
@@ -426,11 +432,12 @@ void setup() {
 }
 
 void loop() {
-  // handled in the stripcontrol handler
-  // and here for now.
   server.handleClient();
-  handleStrips();
-  handleSketchUpdate();
-  handleEffectUpdate();
-  wifiModeHandling();
+  if(currentMode != AP_MODE)
+  {
+    handleStrips();
+    handleSketchUpdate();
+    handleEffectUpdate();
+    wifiModeHandling();
+  }
 }
