@@ -222,6 +222,15 @@ void applyEffectData()
 
 void parseEffectPacket(String data)
 {
+  /* clear current settings. */
+  for(int i = 0; i < 6; i++)
+  {
+    String parameter = "";
+    String argument = "";
+    variables[i][0] = parameter;
+    variables[i][1] = argument;
+  }
+  /* apply received settings. */
   for(int i = 0; i < 6; i++)
   {
     String parameter = getAlphaNumString(data);
@@ -398,7 +407,7 @@ void wifiModeHandling()
 void setup() {
   Serial.begin(115200);
   EEPROM.begin(1024);
-  settingsStore();
+  // settingsStore();
   settingsLoad();
 
   pinMode(0, INPUT);
@@ -418,7 +427,8 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/ledsettings", handleLedSettings);
   server.on("/wifisettings", handleWiFiSettings);
-  server.on("/stripcontrol", handleStripControl);
+  /* used to be used for controlling with app.*/
+  // server.on("/stripcontrol", handleStripControl);
   server.begin();
   Serial.println("done setting up server");
 
@@ -432,12 +442,20 @@ void setup() {
 }
 
 void loop() {
-  server.handleClient();
-  if(currentMode != AP_MODE)
+  if(currentMode == AP_MODE || 1)
   {
+    // only serve pages in Access point mode.
+    server.handleClient();
+  }
+  else if(currentMode == STA_MODE)
+  {
+    // enable ledstrip animations.
     handleStrips();
-    handleSketchUpdate();
+    // enable controle over effects.
     handleEffectUpdate();
+    // enable switching to AP_MODE
     wifiModeHandling();
   }
+  // always be able to upload new firmware <dev>
+  handleSketchUpdate();
 }
