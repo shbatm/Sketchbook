@@ -10,8 +10,7 @@
 // declared in main sketch.
 extern String sta_ssid;
 extern String sta_pass;
-extern String ap_ssid;
-extern String ap_pass;
+extern String board_name;
 
 extern int accesPin;
 

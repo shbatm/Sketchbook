@@ -8,10 +8,9 @@
 #include "stripcontrol.h"
 #include "ws2801.h"
 
-String board_name = "TkkrEsp-01";
+#define AP_BUTTON 0
 
-String ap_ssid = "TheEsp";
-String ap_pass = "nospoonthereis";
+String board_name = "TkkrEsp-01";
 
 String sta_ssid = "www.tkkrlab.nl";
 String sta_pass = "hax4or2the2paxor3";
@@ -73,6 +72,7 @@ String loadString(int& addr)
 {
   String text = "";
   char read = EEPROM.read(addr);
+  /* Basicly how you read any string in C. */
   while(read != '\0')
   {
     text += read;
@@ -100,8 +100,7 @@ void settingsStore()
 {
   /*
   stored are:
-  ap ssid,
-  ap pass,
+  board_name,
   sta ssid,
   sta pass,
   accesPin,
@@ -109,8 +108,7 @@ void settingsStore()
   currentMode
   */
   int eeAddr = 0;
-  storeString(ap_ssid, eeAddr);
-  storeString(ap_pass, eeAddr);
+  storeString(board_name, eeAddr);
   storeString(sta_ssid, eeAddr);
   storeString(sta_pass, eeAddr);
   storeInt(accesPin, eeAddr);
@@ -122,8 +120,7 @@ void settingsStore()
 void settingsLoad()
 {
   int eeAddr = 0;
-  ap_ssid = loadString(eeAddr);
-  ap_pass = loadString(eeAddr);
+  board_name = loadString(eeAddr);
   sta_ssid = loadString(eeAddr);
   sta_pass = loadString(eeAddr);
   accesPin = loadInt(eeAddr);
@@ -291,46 +288,6 @@ void handleEffectUpdate()
   }
 }
 
-String iptostr(IPAddress ip)
-{
-  String ipstr;
-  for(int i = 0; i< 4; i++)
-  {
-    if(i == 3)
-    {
-      ipstr += String(ip[i]);
-    }
-    else
-    {
-      ipstr += String(ip[i]);
-      ipstr += ".";
-    }
-  }
-  return ipstr;
-}
-
-void moduleResetHandling(void)
-{
-  static unsigned long long buttoncount;
-  static unsigned long long buttonprev;
-  static int buttoninterval = 2000;
-
-  buttoncount = millis();
-  buttonprev = buttoncount;
-  while(!digitalRead(0))
-  {
-    buttoncount = millis();
-    if((buttoncount - buttonprev) >= buttoninterval)
-    {
-      pinMode(0, OUTPUT);
-      digitalWrite(0, LOW);
-      buttonprev = buttoncount;
-      ESP.reset();
-    }
-    delay(1);
-  }
-}
-
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
@@ -350,9 +307,9 @@ void printWifiStatus() {
 
 void setupAP()
 {
-  delay(1000);
+  currentMode = AP_MODE;
   WiFi.mode(WIFI_AP);
-  WiFi.softAP(ap_ssid.c_str(), ap_pass.c_str());
+  WiFi.softAP(board_name.c_str());
   Serial.println();
   IPAddress myIP = WiFi.softAPIP();
   Serial.println(myIP);
@@ -360,7 +317,7 @@ void setupAP()
 
 void setupSTA()
 {
-  delay(1000);
+  currentMode = STA_MODE;
   WiFi.mode(WIFI_STA);
   WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
   int i = 0;
@@ -382,60 +339,55 @@ void setupSTA()
 
 void wifiModeHandling()
 {
-  if(!digitalRead(0))
+  if(!digitalRead(AP_BUTTON))
   {
-    moduleResetHandling();
-    if(digitalRead(0))
+    Serial.println("got here");
+    WiFi.disconnect();
+    if(currentMode == STA_MODE)
     {
-      WiFi.disconnect();
-      if(currentMode == STA_MODE)
-      {
-        currentMode = AP_MODE;
-        Serial.println("mode is now AP_MODE");
-        setupAP();
-      }
-      else
-      {
-        currentMode = STA_MODE;
-        Serial.println("mode is now STA_MODE");
-        setupSTA();
-      }
+      Serial.println("mode is now AP_MODE");
+      setupAP();
     }
+    else
+    {
+      Serial.println("mode is now STA_MODE");
+      setupSTA();
+    }
+    while(!digitalRead(AP_BUTTON)) delay(50);
   }
 }
 
 void setup() {
   Serial.begin(115200);
+  // prepare eeprom for use.
   EEPROM.begin(1024);
   // settingsStore();
   settingsLoad();
-
-  pinMode(0, INPUT);
-
-  WiFi.disconnect();
-  if(currentMode == STA_MODE)
-  {
-    setupSTA();
-  }
-  else if(currentMode == AP_MODE)
-  {
-    setupAP();
-  }
-
-  Serial.println("done setting up pins, and WifiMode.");
-
-  server.on("/", handleRoot);
-  server.on("/ledsettings", handleLedSettings);
-  server.on("/wifisettings", handleWiFiSettings);
-  /* used to be used for controlling with app.*/
-  // server.on("/stripcontrol", handleStripControl);
-  server.begin();
-  Serial.println("done setting up server");
-
   // updating related.
   Serial.setDebugOutput(true);
   uploadListener.begin(8266);
 
+  pinMode(AP_BUTTON, INPUT_PULLUP);
+
+  WiFi.disconnect();
+  // start connecting. will switch to Access Point
+  // if no connections can be made.
+  setupSTA();
+
+  Serial.println("done setting up pins, and WifiMode.");
+
+  /* Setup server side things.*/
+  server.on("/", handleRoot);
+  server.on("/ledsettings", handleLedSettings);
+  server.on("/wifisettings", handleWiFiSettings);
+
+  /* used to be used for controlling with app.*/
+  // server.on("/stripcontrol", handleStripControl);
+
+  server.begin();
+  Serial.println("done setting up server");
+  
+  // start listening for udp packets.
   effectListener.begin(1337);
 
   setupStrips();
@@ -447,7 +399,7 @@ void loop() {
     // only serve pages in Access point mode.
     server.handleClient();
   }
-  else if(currentMode == STA_MODE)
+  if(currentMode == STA_MODE)
   {
     // enable ledstrip animations.
     handleStrips();

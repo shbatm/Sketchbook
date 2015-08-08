@@ -67,52 +67,69 @@ String divFooter =
 "</div>"
 ;
 
-/*
-void handleStripControl()
+String iptostr(IPAddress ip)
 {
-  String debug = "protocol debug: <br>";
-  Serial.println("received data");
-  if(server.args())
+  String ipstr;
+  for(int i = 0; i< 4; i++)
   {
-    for(int i = 0;i < server.args(); i++)
+    if(i == 3)
     {
-      debug += server.argName(i) + ": " + server.arg(i) + "<br>";
+      ipstr += String(ip[i]);
     }
-    stripcontrol.pincode = server.arg("pin").toInt();
-    stripcontrol.effect = server.arg("effect").toInt();
-    stripcontrol.brightness = server.arg("brightness").toInt();
-    stripcontrol.varZero = server.arg("var0").toInt();
-    stripcontrol.varOne = server.arg("var1").toInt();
-    stripcontrol.varTwo = server.arg("var2").toInt();
-    stripcontrol.changed = true;
-    debugPrintStripControl();
+    else
+    {
+      ipstr += String(ip[i]);
+      ipstr += ".";
+    }
   }
-  handleStrips();
+  return ipstr;
+}
 
-  String htmlStripControl = 
-  "<!DOCTYPE html>"
-  "<html>"
-  "<title> esp-light page. </title>"
-  "<head>" + css + "</head>"
-  "<body>" +
-  divHeader +
-  divNav +
-  "<h1>StripControl</h1><br>" +
-  debug +
-  divFooter + 
-  "</body>"
-  "</html>"
-  ;
-  server.send(200, "text/html", htmlStripControl);
-} */
+void urldecode2(char *dst, const char *src)
+{
+  char a, b;
+  while (*src) {
+    if ((*src == '%') &&
+      ((a = src[1]) && (b = src[2])) &&
+      (isxdigit(a) && isxdigit(b))) {
+      if (a >= 'a')
+        a -= 'a'-'A';
+      if (a >= 'A')
+        a -= ('A' - 10);
+      else
+        a -= '0';
+      if (b >= 'a')
+        b -= 'a'-'A';
+      if (b >= 'A')
+        b -= ('A' - 10);
+      else
+        b -= '0';
+      *dst++ = 16*a+b;
+      src+=3;
+    } 
+    else {
+      *dst++ = *src++;
+    }
+  }
+  *dst++ = '\0';
+}
+
+String decodeB64(String text)
+{
+  char buff[100];
+  urldecode2(buff, text.c_str());
+  return String(buff);
+}
 
 void handleWiFiSettings()
 {
   // get inputs.
-  if(server.args() && server.arg("Confirm"))
+  String debug = "\n";
+  if(server.args())
   {
-    sta_ssid = server.arg("ssid");
-    sta_pass = server.arg("pass");
+    sta_ssid = decodeB64(server.arg("ssid"));
+    sta_pass = decodeB64(server.arg("pass"));
+    board_name = decodeB64(server.arg("boardname"));
     accesPin = server.arg("accesPin").toInt();
     settingsStore();
   }
@@ -125,27 +142,23 @@ void handleWiFiSettings()
   ;
 
   String InputTableAp =
-  "ssid: <br>"
-  "<input value=\"" + ap_ssid + "\" type=\"text\" name=\"bssid\"><br>"
-  "password: <br>"
-  "<input value=\"" + ap_pass + "\" type=\"text\" name=\"bpass\"><br>"
+  "boardname: <br>"
+  "<input value=\"" + board_name + "\" type=\"text\" name=\"boardname\"><br>"
   ;
 
   String InputTableCode = 
-  "espLight ID: <br>"
+  "EspLight Code: <br>"
   "<input value=\"" + String(accesPin) + "\" type=\"text\" name=\"accesPin\"><br>"
   ;
 
   String divWifiSettings = 
   "<div id='divWifiSettings'>"
   "<form action=\"\" method=\"GET\">"
-  "<h3>Station settings:</h3>" +
+  "<h3>EspLight Settings:</h3>" +
   InputTableSta +
-  "<h3>Acces Point settings:</h3>" +
-  InputTableAp + 
-  "<h3> access settings: </h3>" +
+  InputTableAp +
   InputTableCode +
-  "<input type=\"submit\" value=\"Confirm\" name=\"confirm\">"
+  "<input type=\"submit\" value=\"Save\" name=\"confirm\">"
   "</form>"
   "</div>"
   ;
