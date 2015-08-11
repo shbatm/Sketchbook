@@ -17,6 +17,8 @@ extern int accesPin;
 extern ESP8266WebServer server;
 
 extern stripcontrol_t stripcontrol;
+extern int stripselect;
+extern int striplen;
 
 extern void settingsStore();
 

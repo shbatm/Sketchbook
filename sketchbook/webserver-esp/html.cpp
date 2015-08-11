@@ -130,7 +130,7 @@ void handleWiFiSettings()
     sta_ssid = decodeB64(server.arg("ssid"));
     sta_pass = decodeB64(server.arg("pass"));
     board_name = decodeB64(server.arg("boardname"));
-    accesPin = server.arg("accesPin").toInt();
+    accesPin = decodeB64(server.arg("accesPin")).toInt();
     settingsStore();
   }
   // serve page.
@@ -181,6 +181,50 @@ void handleWiFiSettings()
 
 void handleLedSettings()
 {
+  // get inputs.
+  String debug = "\n";
+  if(server.args())
+  {
+    for(int i = 0; i < server.args(); i++)
+    {
+      Serial.print(server.arg(i));
+      Serial.print(": ");
+      Serial.println(server.arg(i).length());
+    }
+
+    if(server.arg("stripselect") == String("ws2812"))
+    {
+      stripselect = WS2812;
+    }
+    else if(server.arg("stripselect") == String("ws2801"))
+    {
+      stripselect = WS2801;
+    }
+    else if(server.arg("stripselect") == String("analog"))
+    {
+      stripselect = ANALOGSTRIP;
+    }
+    striplen = decodeB64(server.arg("striplen")).toInt();
+    setupStrips(striplen);
+    settingsStore();
+  }
+  String checked = "checked";
+  String ws2801checked = (stripselect == WS2801) ? checked : "";
+  String ws2812checked = (stripselect == WS2812) ? checked : "";
+  String analogchecked = (stripselect == ANALOGSTRIP) ? checked : "";
+  String ledSettings = 
+  "<form action=\"\" method=\"GET\">"
+  "select strip type: <br>"
+  "<input type=\"radio\" name=\"stripselect\" value=\"ws2812\"" + ws2812checked + ">ws2812 strip.<br>"
+  "<input type=\"radio\" name=\"stripselect\" value=\"ws2801\"" + ws2801checked + ">ws2801 strip.<br>"
+  "<input type=\"radio\" name=\"stripselect\" value=\"analog\"" + analogchecked + ">analog strip.<br>"
+  "<br>"
+  "input ledlength (amount of leds):<br>"
+  "<input type=\"text\" value=\"" + String(striplen) + "\" name=\"striplen\"><br>"
+  "<input type=\"submit\" value=\"Save\" name=\"confirm\">"
+  "</form>";
+
+
   String htmlRoot = 
   "<!DOCTYPE html>"
   "<html>"
@@ -189,7 +233,7 @@ void handleLedSettings()
   "<body>" +
   divHeader +
   divNav +
-  divSection +
+  ledSettings +
   divFooter + 
   "</body>"
   "</html>"

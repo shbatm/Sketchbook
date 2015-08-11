@@ -36,7 +36,7 @@ typedef struct {
 extern stripcontrol_t stripcontrol;
 extern int stripselect;
 
-void setupStrips();
+void setupStrips(int);
 void handleStrips();
 void debugPrintStripControl();
 

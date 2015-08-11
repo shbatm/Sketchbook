@@ -6,7 +6,6 @@
 
 #include "html.h"
 #include "stripcontrol.h"
-#include "ws2801.h"
 
 #define AP_BUTTON 0
 
@@ -32,14 +31,14 @@ stripcontrol_t stripcontrol = {
 enum {STA_MODE, AP_MODE};
 int currentMode = STA_MODE;
 
-int stripselect = ANALOGSTRIP;
+int stripselect = WS2801;
 
 WiFiUDP uploadListener;
 WiFiUDP effectListener;
 
 ESP8266WebServer server(80);
 
-// stores a string into eeprom pluss nullterminator.
+// stores a string into eeprom plus nullterminator.
 void storeString(String string, int& addr)
 {
   // get a reference to the original c string.
@@ -107,12 +106,17 @@ void settingsStore()
   stripselect,
   currentMode
   */
+  for(int i = 0; i < 1024; i++)
+  {
+    storeInt(0, i);
+  }
   int eeAddr = 0;
   storeString(board_name, eeAddr);
   storeString(sta_ssid, eeAddr);
   storeString(sta_pass, eeAddr);
   storeInt(accesPin, eeAddr);
   storeInt(stripselect, eeAddr);
+  storeInt(striplen, eeAddr);
   storeInt(currentMode, eeAddr);
   EEPROM.commit();
 }
@@ -125,6 +129,7 @@ void settingsLoad()
   sta_pass = loadString(eeAddr);
   accesPin = loadInt(eeAddr);
   stripselect = loadInt(eeAddr);
+  striplen = loadInt(eeAddr);
   currentMode = loadInt(eeAddr);
 }
 
@@ -307,6 +312,7 @@ void printWifiStatus() {
 
 void setupAP()
 {
+  WiFi.disconnect();
   currentMode = AP_MODE;
   WiFi.mode(WIFI_AP);
   WiFi.softAP(board_name.c_str());
@@ -342,7 +348,6 @@ void wifiModeHandling()
   if(!digitalRead(AP_BUTTON))
   {
     Serial.println("got here");
-    WiFi.disconnect();
     if(currentMode == STA_MODE)
     {
       Serial.println("mode is now AP_MODE");
@@ -390,11 +395,11 @@ void setup() {
   // start listening for udp packets.
   effectListener.begin(1337);
 
-  setupStrips();
+  setupStrips(striplen);
 }
 
 void loop() {
-  if(currentMode == AP_MODE || 1)
+  if((currentMode == AP_MODE) || 1)
   {
     // only serve pages in Access point mode.
     server.handleClient();

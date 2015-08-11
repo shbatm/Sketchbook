@@ -1,10 +1,16 @@
 #include "stripcontrol.h"
 
-void setupStrips()
+void setupStrips(int striplen)
 {
+    if(striplen <= 1 || striplen >= 1000)
+    {
+        striplen = 1;
+    }
     setupAnalogStrip();
-    setupWS2801(1e6, 16);
-    setupWS2812(150, 14);
+    // amount, pin
+    setupWS2812(striplen, 13);
+    // freq, amount
+    setupWS2801(1e6, striplen);
 }
 
 void handleStrips()
