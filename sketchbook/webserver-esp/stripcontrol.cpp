@@ -13,7 +13,7 @@ void setupStrips(int striplen)
     if(stripselect == WS2812)
     {
         // amount, pin
-        setupWS2812(striplen, 13);
+        setupWS2812(striplen, 14);
     }
     if(stripselect == WS2801)
     {

@@ -16,7 +16,7 @@ String sta_pass = "hax4or2the2paxor3";
 // String sta_ssid = "HuisVanDerTuuk";
 // String sta_pass = "10SamSung@H";
 
-int accesPin = 1234;
+int accessPin = 1234;
 
 stripcontrol_t stripcontrol = {
   .pincode = 0,
@@ -32,6 +32,7 @@ enum {STA_MODE, AP_MODE};
 int currentMode = STA_MODE;
 
 int stripselect = WS2801;
+int striplen = 1;
 
 WiFiUDP uploadListener;
 WiFiUDP effectListener;
@@ -114,7 +115,7 @@ void settingsStore()
   storeString(board_name, eeAddr);
   storeString(sta_ssid, eeAddr);
   storeString(sta_pass, eeAddr);
-  storeInt(accesPin, eeAddr);
+  storeInt(accessPin, eeAddr);
   storeInt(stripselect, eeAddr);
   storeInt(striplen, eeAddr);
   storeInt(currentMode, eeAddr);
@@ -127,7 +128,7 @@ void settingsLoad()
   board_name = loadString(eeAddr);
   sta_ssid = loadString(eeAddr);
   sta_pass = loadString(eeAddr);
-  accesPin = loadInt(eeAddr);
+  accessPin = loadInt(eeAddr);
   stripselect = loadInt(eeAddr);
   striplen = loadInt(eeAddr);
   currentMode = loadInt(eeAddr);
@@ -161,7 +162,9 @@ void handleSketchUpdate()
 
 void findResponse(WiFiUDP listener)
 {
+  // create a packetd to put things in.
   listener.beginPacket(listener.remoteIP(), listener.remotePort());
+  // reply with our board name.
   listener.print(board_name);
   Serial.print("Sending: ");
   Serial.println(board_name);
@@ -169,6 +172,7 @@ void findResponse(WiFiUDP listener)
   Serial.print(listener.remoteIP());
   Serial.print(":");
   Serial.println(listener.remotePort());
+  // end creating packet and send.
   listener.endPacket();
 }
 
@@ -212,13 +216,28 @@ String effectArg(const char *par)
 
 void applyEffectData()
 {
+  // don't apply if codes don't match.
   stripcontrol.pincode = effectArg("pin").toInt();
-  stripcontrol.effect = effectArg("effect").toInt();
-  stripcontrol.brightness = effectArg("brightness").toInt();
-  stripcontrol.varZero = effectArg("var0").toInt();
-  stripcontrol.varOne = effectArg("var1").toInt();
-  stripcontrol.varTwo = effectArg("var2").toInt();
-  stripcontrol.changed = true;
+  if(accessPin != stripcontrol.pincode)
+  {
+    // debug print some info. 
+    Serial.println("rejecting packet");
+    Serial.println("pins: ");
+    Serial.printf("%d:%d\n", accessPin, stripcontrol.pincode);
+    return;
+  }
+  else
+  {
+    Serial.println("pins: ");
+    Serial.printf("%d:%d\n", accessPin, stripcontrol.pincode);
+    // parse and store in struct.
+    stripcontrol.effect = effectArg("effect").toInt();
+    stripcontrol.brightness = effectArg("brightness").toInt();
+    stripcontrol.varZero = effectArg("var0").toInt();
+    stripcontrol.varOne = effectArg("var1").toInt();
+    stripcontrol.varTwo = effectArg("var2").toInt();
+    stripcontrol.changed = true;
+  }
   debugPrintStripControl();
 }
 
@@ -415,5 +434,4 @@ void loop() {
   }
   // always be able to upload new firmware <dev>
   handleSketchUpdate();
-  delay(0);
 }

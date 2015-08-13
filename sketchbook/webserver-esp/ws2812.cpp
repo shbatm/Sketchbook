@@ -1,6 +1,6 @@
 #include "ws2812.h"
 
-int striplen = 0;
+static int striplen = 0;
 NeoPixelBus *strip = NULL;
 
 static int colors[3] = {0, 0, 0};

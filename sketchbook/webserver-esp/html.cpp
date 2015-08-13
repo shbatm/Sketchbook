@@ -130,7 +130,7 @@ void handleWiFiSettings()
     sta_ssid = decodeB64(server.arg("ssid"));
     sta_pass = decodeB64(server.arg("pass"));
     board_name = decodeB64(server.arg("boardname"));
-    accesPin = decodeB64(server.arg("accesPin")).toInt();
+    accessPin = decodeB64(server.arg("accessPin")).toInt();
     settingsStore();
   }
   // serve page.
@@ -148,7 +148,7 @@ void handleWiFiSettings()
 
   String InputTableCode = 
   "EspLight Code: <br>"
-  "<input value=\"" + String(accesPin) + "\" type=\"text\" name=\"accesPin\"><br>"
+  "<input value=\"" + String(accessPin) + "\" type=\"text\" name=\"accessPin\"><br>"
   ;
 
   String divWifiSettings = 
