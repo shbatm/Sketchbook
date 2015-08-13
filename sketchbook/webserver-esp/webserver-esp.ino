@@ -415,4 +415,5 @@ void loop() {
   }
   // always be able to upload new firmware <dev>
   handleSketchUpdate();
+  delay(0);
 }

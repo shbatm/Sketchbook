@@ -100,4 +100,5 @@ void updateWS2801()
         SPI.transfer(buffer[1][i]);
         SPI.transfer(buffer[2][i]);
     }
+    delayMicroseconds(500);
 }

@@ -6,11 +6,20 @@ void setupStrips(int striplen)
     {
         striplen = 1;
     }
-    setupAnalogStrip();
-    // amount, pin
-    setupWS2812(striplen, 13);
-    // freq, amount
-    setupWS2801(1e6, striplen);
+    if(stripselect == ANALOGSTRIP)
+    {
+        setupAnalogStrip();
+    }
+    if(stripselect == WS2812)
+    {
+        // amount, pin
+        setupWS2812(striplen, 13);
+    }
+    if(stripselect == WS2801)
+    {
+        // freq, amount
+        setupWS2801(1e6, striplen);
+    }
 }
 
 void handleStrips()
@@ -51,17 +60,11 @@ void handleStrips()
         {
             fadeWS2801(speed, brightness);
             updateWS2801();
-            // takes to long for the processor.
-            // so call delay(1) to give it some time.
-            delay(1);
         }
         else if(stripselect == WS2812)
         {
             fadeWS2812(speed, brightness);
             updateWS2812();
-            // takes to long for the processer.
-            // so call delay(1) to give it some time.
-            delay(1);
         }
     }
     else if(stripcontrol.effect == DIGITALFADING)
