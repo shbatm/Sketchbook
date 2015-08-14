@@ -7,7 +7,14 @@
 #include "html.h"
 #include "stripcontrol.h"
 
-#define AP_BUTTON 0
+#define AP_BUTTON       12
+#define SERIALBAUD      115200
+#define EFFECTPORT      1337
+#define WEBSERVERPORT   80
+#define EEPROMSIZE      1024
+#define OTAPORT         48266
+#define SERVERTEST      true
+
 
 String board_name = "TkkrEsp-01";
 
@@ -37,7 +44,7 @@ int striplen = 1;
 WiFiUDP uploadListener;
 WiFiUDP effectListener;
 
-ESP8266WebServer server(80);
+ESP8266WebServer server(WEBSERVERPORT);
 
 // stores a string into eeprom plus nullterminator.
 void storeString(String string, int& addr)
@@ -331,7 +338,6 @@ void printWifiStatus() {
 
 void setupAP()
 {
-  WiFi.disconnect();
   currentMode = AP_MODE;
   WiFi.mode(WIFI_AP);
   WiFi.softAP(board_name.c_str());
@@ -344,6 +350,7 @@ void setupSTA()
 {
   currentMode = STA_MODE;
   WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
   WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
   int i = 0;
   while(WiFi.status() != WL_CONNECTED)
@@ -382,14 +389,14 @@ void wifiModeHandling()
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(SERIALBAUD);
   // prepare eeprom for use.
-  EEPROM.begin(1024);
+  EEPROM.begin(EEPROMSIZE);
   // settingsStore();
   settingsLoad();
   // updating related.
   Serial.setDebugOutput(true);
-  uploadListener.begin(8266);
+  uploadListener.begin(OTAPORT);
 
   pinMode(AP_BUTTON, INPUT_PULLUP);
 
@@ -405,26 +412,29 @@ void setup() {
   server.on("/ledsettings", handleLedSettings);
   server.on("/wifisettings", handleWiFiSettings);
 
-  /* used to be used for controlling with app.*/
-  // server.on("/stripcontrol", handleStripControl);
-
   server.begin();
   Serial.println("done setting up server");
   
   // start listening for udp packets.
-  effectListener.begin(1337);
+  effectListener.begin(EFFECTPORT);
 
+  // setup strips for the first time (initialize some pointers and stuff.)
   setupStrips(striplen);
 }
 
 void loop() {
-  if((currentMode == AP_MODE) || 1)
+  if((currentMode == AP_MODE) || SERVERTEST)
   {
     // only serve pages in Access point mode.
     server.handleClient();
   }
   if(currentMode == STA_MODE)
   {
+    // check if we are still connected.
+    while(WiFi.status() != WL_CONNECTED)
+    {
+      setupSTA();
+    }
     // enable ledstrip animations.
     handleStrips();
     // enable controle over effects.

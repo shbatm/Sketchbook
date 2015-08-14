@@ -4,41 +4,18 @@ static uint8_t *buffer[3] = {NULL, NULL, NULL};
 
 static int striplen;
 
-static int colors[3] = {0, 0, 0};
-static int value = 0;
-static int pledselect = 0;
-static int ledselect = 0;
-
 static unsigned long ccurrent = 0;
 static unsigned long cprevious = 0;
 static int cinterval = 10;
 
-static void colorinc()
-{
-    value++;
-    if(value > 255)
-    {
-        ledselect++;
-        value = 1;
-        if(ledselect == 3)
-        {
-            ledselect = 0;
-            pledselect = 2;
-        }
-        else
-        {
-            pledselect = ledselect - 1;
-        }
-    }
-    colors[pledselect] = 255 - value;
-    colors[ledselect] = value;
-}
+static uint8_t *colors;
 
 void setupWS2801(int freq, int len)
 {
     SPI.begin();
     SPI.setFrequency(1e6);
     striplen = len;
+    colors = colorinc();
     // allocate space if run first time else free and allocate.
     if(buffer[0] == NULL && buffer[1] == NULL && buffer[2] == NULL)
     {
@@ -80,7 +57,7 @@ void fadeWS2801(int speed, int brightness)
     if((ccurrent - cprevious) >= cinterval)
     {
         cprevious = ccurrent;
-        colorinc();
+        colors = colorinc();
     }
 
     cinterval = speed+1;

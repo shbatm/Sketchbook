@@ -1,10 +1,10 @@
 #include "fadeColor.h"
 
 
-uint8_t colors[3] = {0, 0, 0};
-int value = 0;
-int pledselect = 0;
-int ledselect = 0;
+static uint8_t colors[3] = {0, 0, 0};
+static int value = 0;
+static int pledselect = 2;
+static int ledselect = 0;
 
 uint8_t *colorinc()
 {

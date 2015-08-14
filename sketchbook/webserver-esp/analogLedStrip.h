@@ -2,6 +2,7 @@
 #define ANALOGLEDSTRIP_H
 
 #include <Arduino.h>
+#include "fadeColor.h"
 
 #define REDPIN 5
 #define GREENPIN 4

@@ -5,6 +5,8 @@
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+
 #include "stripcontrol.h"
 
 // declared in main sketch.
@@ -12,7 +14,7 @@ extern String sta_ssid;
 extern String sta_pass;
 extern String board_name;
 
-extern int accesPin;
+extern int accessPin;
 
 extern ESP8266WebServer server;
 

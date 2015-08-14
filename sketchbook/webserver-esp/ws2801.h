@@ -2,6 +2,7 @@
 #define WS2801_H
 
 #include <SPI.h>
+#include "fadeColor.h"
 
 void setupWS2801(int, int);
 void setWS2801Pixel(int, int, int, int);

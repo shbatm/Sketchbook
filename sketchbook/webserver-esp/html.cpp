@@ -1,5 +1,4 @@
 #include "html.h"
-#include "stripcontrol.h"
 
 String css =
 "<style>"
@@ -8,17 +7,19 @@ String css =
 "    color:white;"
 "    text-align:center;"
 "    padding:5px;"
+"    border-radius:15px;"
 "}"
 "#nav {"
 "    line-height:30px;"
-"    background-color:#eeeeee;"
-"    height:500px;"
+"    background-color:#9999FF;"
+"    height:320px;"
 "    width:150px;"
 "    float:left;"
 "    padding:5px;"
+"    border-radius:15px;"
 "}"
 "#section {"
-"    width:350px;"
+"    width: auto;"
 "    float:left;"
 "    padding:10px;"
 "}"
@@ -28,22 +29,26 @@ String css =
 "    clear:both;"
 "    text-align:center;"
 "    padding:5px;"
+"    border-radius:15px;"
 "}"
 "#divWifiSettings {"
-"    width:auto;"
-"    height:auto;"
-"    border-collapse: collapse;"
-"    color:black;"
-"    border-style: solid;"
-"    border-width: 1px;"
-"    padding: 10px;"
+"    float:left;"
+"}"
+"#divWifiNetworks {"
+"    float:right;"
+"    background-color:#9999FF;"
+"    border-radius:15px;"
+// "    padding-top:20%;"
+// "    padding-left:20%;"
+"    padding:auto;"
+"    margin:auto;"
 "}"
 "</style>" 
 ;
   
 String divHeader = 
 "<div id='header'>"
-"<h1> Esp-Info</h1>"
+"<h1> EspLight.</h1>"
 "</div>"
 ;
 
@@ -51,7 +56,6 @@ String divNav =
 "<div id='nav'>"
 "<a href=\"wifisettings\">WiFi Settings.</a><br>"
 "<a href=\"ledsettings\">led settings.</a><br>"
-"<a href=\"./\">Front page.</a><br>"
 "</div>"
 ;
 
@@ -66,6 +70,32 @@ String divFooter =
 "<div id='footer'>"
 "</div>"
 ;
+
+String getAvailableNetworks()
+{
+  String networks = "";
+  int n = WiFi.scanNetworks();
+  if(n == 0)
+  {
+    return String("None available <br>");
+  }
+  else
+  {
+    networks += "Number of networks: " + String(n) + "<br>";
+    networks += "Found: <br>";
+    for(int i = 0; i < n; i++)
+    {
+      networks += (i+1) + ": ";
+      networks += WiFi.SSID(i);
+      networks += " (";
+      networks += WiFi.RSSI(i);
+      networks += ")";
+      networks += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "<br>" : "*<br>";
+      delay(10);
+    }
+  }
+  return networks;
+}
 
 String iptostr(IPAddress ip)
 {
@@ -163,6 +193,19 @@ void handleWiFiSettings()
   "</div>"
   ;
 
+  String divWifiNetworks =
+  "<div id='divWifiNetworks'>" +
+  getAvailableNetworks() + 
+  "</div>"
+  ;
+
+  String content =
+  "<div id='section'>" +
+  divWifiSettings +
+  divWifiNetworks +
+  "</div>"
+  ;
+
   String htmlWiFiSet = 
   "<!DOCTYPE html>"
   "<html>"
@@ -171,11 +214,12 @@ void handleWiFiSettings()
   "<body>" +
   divHeader +
   divNav +
-  divWifiSettings +
+  content +
   divFooter + 
   "</body>"
   "</html>"
   ;
+  
   server.send(200, "text/html", htmlWiFiSet);
 }
 
@@ -213,6 +257,7 @@ void handleLedSettings()
   String ws2812checked = (stripselect == WS2812) ? checked : "";
   String analogchecked = (stripselect == ANALOGSTRIP) ? checked : "";
   String ledSettings = 
+  "<div id='section'>"
   "<form action=\"\" method=\"GET\">"
   "select strip type: <br>"
   "<input type=\"radio\" name=\"stripselect\" value=\"ws2812\"" + ws2812checked + ">ws2812 strip.<br>"
@@ -222,7 +267,9 @@ void handleLedSettings()
   "input ledlength (amount of leds):<br>"
   "<input type=\"text\" value=\"" + String(striplen) + "\" name=\"striplen\"><br>"
   "<input type=\"submit\" value=\"Save\" name=\"confirm\">"
-  "</form>";
+  "</form>"
+  "</div>"
+  ;
 
 
   String htmlRoot = 
