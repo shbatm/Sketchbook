@@ -41,7 +41,7 @@ int currentMode = STA_MODE;
 int stripselect = WS2801;
 int striplen = 1;
 
-WiFiUDP uploadListener;
+WiFiUDP OTA;
 WiFiUDP effectListener;
 
 ESP8266WebServer server(WEBSERVERPORT);
@@ -143,26 +143,44 @@ void settingsLoad()
 
 void handleSketchUpdate()
 {
-  int cb = uploadListener.parsePacket();
-  if(cb)
-  {
-    IPAddress remote = uploadListener.remoteIP();
-    int cmd  = uploadListener.parseInt();
-    int port = uploadListener.parseInt();
-    int sz   = uploadListener.parseInt();
-    Serial.println("Got update: ");
-    Serial.printf("%d %d %d\r\n", cmd, port, sz);
-    WiFiClient cl;
-    if(!cl.connect(remote, port))
-    {
-      Serial.println("failed to connect.");
-      ESP.reset();
+  if (OTA.parsePacket()) {
+    IPAddress remote = OTA.remoteIP();
+    int cmd  = OTA.parseInt();
+    int port = OTA.parseInt();
+    int size   = OTA.parseInt();
+
+    Serial.print("Update Start: ip:");
+    Serial.print(remote);
+    Serial.printf(", port:%d, size:%d\n", port, size);
+    uint32_t startTime = millis();
+
+    WiFiUDP::stopAll();
+
+    if(!Update.begin(size)){
+      Serial.println("Update Begin Error");
+      return;
     }
-    uploadListener.stop();
-    if(!ESP.updateSketch(cl, sz))
-    {
-      Serial.println("Update failed.");
-      ESP.reset();
+
+    WiFiClient client;
+    if (client.connect(remote, port)) {
+
+      uint32_t written;
+      while(!Update.isFinished()){
+        written = Update.write(client);
+        if(written > 0) client.print(written, DEC);
+      }
+      Serial.setDebugOutput(false);
+
+      if(Update.end()){
+        client.println("OK");
+        Serial.printf("Update Success: %u\nRebooting...\n", millis() - startTime);
+        ESP.restart();
+      } else {
+        Update.printError(client);
+        Update.printError(Serial);
+      }
+    } else {
+      Serial.printf("Connect Failed: %u\n", millis() - startTime);
     }
   }
 }
@@ -394,9 +412,6 @@ void setup() {
   EEPROM.begin(EEPROMSIZE);
   // settingsStore();
   settingsLoad();
-  // updating related.
-  Serial.setDebugOutput(true);
-  uploadListener.begin(OTAPORT);
 
   pinMode(AP_BUTTON, INPUT_PULLUP);
 
@@ -404,6 +419,9 @@ void setup() {
   // start connecting. will switch to Access Point
   // if no connections can be made.
   setupSTA();
+  // enable OTA
+  Serial.setDebugOutput(true);
+  OTA.begin(OTAPORT);
 
   Serial.println("done setting up pins, and WifiMode.");
 
