@@ -6,49 +6,58 @@
 const char *ssid = "www.tkkrlab.nl";
 const char *pass = "hax4or2the2paxor3";
 
-uint8_t adcFrame[3];
-
 #define SINGLE 1
 #define DIFFERENTIAL 0
-#define STARTBIT (1 << 2)
-#define SNGLDIFBIT(X) (X <<  1)
-
+#define SIGLDIF(X) (X << 9)
 #define SELPIN 4
 
 uint16_t readAnalogChannel(int channel)
 {
-    uint8_t command;
-    uint16_t value;
-    // clear adcFrame
-    memcpy(adcFrame, "0", 3);
-    // make sure we only have 8 channels.
-    channel &= 0x07;
+    int adcvalue = 0;
+  int b1 = 0, b2 = 0;
+  int sign = 0;
 
-    // trigger a conversion.
-    digitalWrite (SELPIN, LOW);
-    delay(0);
-    
-    // setup first command byte.
-    command = STARTBIT | SNGLDIFBIT(SINGLE) | (channel >> 2);
-    adcFrame[0] = command;
+  // command bits for MCP3304
+  // 0000 = diff, ch0 = in+, ch1 = in-
+  // 0010 = diff, ch2 = in+, ch3 = in-
+  // 0100 = diff, ch4 = in+, ch5 = in-
 
-    // setup second command byte.
-    command = (channel << 7);
-    adcFrame[1] = command;
+  digitalWrite (SELPIN, LOW); // Select adc
+  delay(0);
 
-    // setup third command byte, doesn't matter what it is.
-    command = 0x00;
-    adcFrame[2] = command;
+  // first byte
+  // first byte will always be B000010xx where xx are the D2 and D1 channel bits  
+  byte commandbits = B0000110;
+  commandbits |= (channel >> 2);         // high bit of channel
 
-    // transfer bytes and put the results in the adcFrame.
-    SPI.transferBytes(adcFrame, adcFrame, 3);
+  SPI.transfer(commandbits);       // send out first byte of command bits
 
-    digitalWrite(SELPIN, HIGH);
-    delay(0);
+  // second byte; Bx0000000; leftmost bit is D0 channel bit
+  commandbits = B00000000;
+  commandbits |= (channel << 6);        // if D0 is set it will be the leftmost bit now
+  b1 = SPI.transfer(commandbits);       // send out second byte of command bits
 
-    value = (adcFrame[1] | (adcFrame[2] << 8)) & 0xFFF;
+  // hi byte will have XX0SBBBB
+  // set the top 3 don't care bits so it will format nicely
+  b1 |= B11100000;
+  //Serial.print(b1, BIN); Serial.print(" ");
+  sign = b1 & B00010000;
+  int hi = b1 & B00001111;
 
-    return value;
+  // read low byte
+  b2 = SPI.transfer(b2);              // don't care what we send
+  //Serial.print(b2, BIN); Serial.print("\r\n");
+  int lo = b2;
+  digitalWrite(SELPIN, HIGH); // turn off device
+  delay(0);
+
+  int reading = hi * 256 + lo;
+
+  if (sign) {
+    reading = (4096 - reading) * -1;
+  }
+
+  return (reading);
 }
 
 void setup()
@@ -97,11 +106,9 @@ void loop()
     if(current - previous >= interval)
     {
         previous = current;
-        Serial.println();
-        for(int i = 0; i<=7; i++)
-        {
-             sendTelnet(String("channel(") + String(i) + ") " + String(readAnalogChannel(i)) + "\n");
-        }
+        int i = 0;
+        for(i; i<=7; i++)
+            sendTelnet(String("channel(") + String(i) + ") " + String(readAnalogChannel(i)) + "\n");
     }
     handleTelnet();
 }
