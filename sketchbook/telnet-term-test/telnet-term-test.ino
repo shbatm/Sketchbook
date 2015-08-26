@@ -8,12 +8,13 @@ const char *pass = "hax4or2the2paxor3";
 
 #define SINGLE 1
 #define DIFFERENTIAL 0
-#define SIGLDIF(X) (X << 9)
-#define SELPIN 4
+#define SIGLDIF(X) (X << 1)
+#define STARTBIT (1 << 2)
+#define SELPIN 5
 
 uint16_t readAnalogChannel(int channel)
 {
-    int adcvalue = 0;
+  int adcvalue = 0;
   int b1 = 0, b2 = 0;
   int sign = 0;
 
@@ -65,6 +66,9 @@ void setup()
     Serial.begin(115200);
     Serial.println();
 
+    pinMode(SELPIN, OUTPUT);
+    digitalWrite(SELPIN, HIGH);
+
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, pass);
     while(WiFi.status() != WL_CONNECTED)
@@ -78,9 +82,6 @@ void setup()
 
     Serial.print("Ip: ");
     Serial.println(WiFi.localIP());
-
-    pinMode(SELPIN, OUTPUT);
-    digitalWrite(SELPIN, HIGH);
     SPI.setFrequency(10e6);
     SPI.setBitOrder(MSBFIRST);
     SPI.setDataMode(SPI_MODE0);
@@ -88,7 +89,7 @@ void setup()
 }
 
 static unsigned long current, previous;
-static int interval = 1000;
+static int interval = 100;
 
 void telnetsendtest()
 {
@@ -106,6 +107,7 @@ void loop()
     if(current - previous >= interval)
     {
         previous = current;
+        sendTelnet("\u001B[2J");
         int i = 0;
         for(i; i<=7; i++)
             sendTelnet(String("channel(") + String(i) + ") " + String(readAnalogChannel(i)) + "\n");
