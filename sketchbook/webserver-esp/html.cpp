@@ -40,8 +40,8 @@ String css =
 "    border-radius:15px;"
 // "    padding-top:20%;"
 // "    padding-left:20%;"
-"    padding:auto;"
-"    margin:auto;"
+"    padding:10px;"
+"    margin:10px;"
 "}"
 "</style>" 
 ;

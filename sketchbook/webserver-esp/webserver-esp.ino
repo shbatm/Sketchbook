@@ -383,6 +383,7 @@ void setupSTA(bool silent)
     Serial.print(".");
     // if button pressed switch mode.
     wifiModeHandling();
+    // keep a timeout timer.
     i++;
     if(i == 10)
     {
@@ -400,17 +401,19 @@ void wifiModeHandling()
 {
   if(!digitalRead(AP_BUTTON))
   {
+    // switch modes as needed.
     if(currentMode == STA_MODE)
     {
       Serial.println("mode is now AP_MODE");
       setupAP();
     }
-    else
-    {
-      Serial.println("mode is now STA_MODE");
-      // list to output that we are connecting
-      setupSTA(false);
-    }
+    /*acutally never gets here. but does if we allowed it to switch back.*/
+    // else
+    // {
+    //   Serial.println("mode is now STA_MODE");
+    //   // list to output that we are connecting
+    //   setupSTA(false);
+    // }
     while(!digitalRead(AP_BUTTON)) delay(50);
   }
 }
@@ -419,21 +422,26 @@ void setupWifi(bool silent)
 {
   if(currentMode == STA_MODE)
   {
+    Serial.println("mode is now STA_MODE");
     setupSTA(silent);
   }
-  else if(currentMode == AP_MODE)
+  else
   {
+    Serial.println("mode is now AP_MODE");
     setupAP();
   }
 }
 
 void setup() {
   Serial.begin(SERIALBAUD);
+  Serial.println();
   // prepare eeprom for use.
   EEPROM.begin(EEPROMSIZE);
   // settingsStore();
+  // load stored settings.
   settingsLoad();
 
+  // setup mode switching pin
   pinMode(AP_BUTTON, INPUT_PULLUP);
 
   // setup wifi
@@ -452,7 +460,7 @@ void setup() {
   server.begin();
   Serial.println("done setting up server");
   
-  // start listening for udp packets.
+  // start listening for udp packets. for effect controle.
   effectListener.begin(EFFECTPORT);
 
   // setup strips for the first time (initialize some pointers and stuff.)
@@ -481,6 +489,6 @@ void loop() {
     // enable switching to AP_MODE
     wifiModeHandling();
   }
-  // always be able to upload new firmware <dev>
+  // allow uploading over OTA <dev>
   handleSketchUpdate();
 }
