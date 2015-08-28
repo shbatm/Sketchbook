@@ -183,7 +183,7 @@ void handleWiFiSettings()
 
   String divWifiSettings = 
   "<div id='divWifiSettings'>"
-  "<form action=\"\" method=\"GET\">"
+  "<form action=\"\" method=\"POST\">"
   "<h3>EspLight Settings:</h3>" +
   InputTableSta +
   InputTableAp +
@@ -258,7 +258,7 @@ void handleLedSettings()
   String analogchecked = (stripselect == ANALOGSTRIP) ? checked : "";
   String ledSettings = 
   "<div id='section'>"
-  "<form action=\"\" method=\"GET\">"
+  "<form action=\"\" method=\"POST\">"
   "select strip type: <br>"
   "<input type=\"radio\" name=\"stripselect\" value=\"ws2812\"" + ws2812checked + ">ws2812 strip.<br>"
   "<input type=\"radio\" name=\"stripselect\" value=\"ws2801\"" + ws2801checked + ">ws2801 strip.<br>"

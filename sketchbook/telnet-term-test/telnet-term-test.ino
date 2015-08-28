@@ -6,6 +6,8 @@
 const char *ssid = "www.tkkrlab.nl";
 const char *pass = "hax4or2the2paxor3";
 
+ADC_MODE(ADC_VCC);
+
 #define SINGLE 1
 #define DIFFERENTIAL 0
 #define SIGLDIF(X) (X << 1)
@@ -111,6 +113,7 @@ void loop()
         int i = 0;
         for(i; i<=7; i++)
             sendTelnet(String("channel(") + String(i) + ") " + String(readAnalogChannel(i)) + "\n");
+        sendTelnet(String("vcc: ") + String(ESP.getVcc()) + "\n");
     }
     handleTelnet();
 }

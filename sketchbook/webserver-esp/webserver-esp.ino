@@ -16,13 +16,12 @@
 #define SERVERTEST      true
 
 
+// set initial board name and wifi settings.
 String board_name = "TkkrEsp-01";
-
 String sta_ssid = "www.tkkrlab.nl";
-String sta_pass = "hax4or2the2paxor3";
-// String sta_ssid = "HuisVanDerTuuk";
-// String sta_pass = "10SamSung@H";
+String sta_pass = "apassword";
 
+// set an initial pincode.
 int accessPin = 1234;
 
 stripcontrol_t stripcontrol = {
@@ -35,10 +34,13 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
+// select an initial mode.
 enum {STA_MODE, AP_MODE};
 int currentMode = STA_MODE;
 
+// select intial ledstrip
 int stripselect = WS2801;
+// select an initial length.
 int striplen = 1;
 
 WiFiUDP OTA;
@@ -125,7 +127,7 @@ void settingsStore()
   storeInt(accessPin, eeAddr);
   storeInt(stripselect, eeAddr);
   storeInt(striplen, eeAddr);
-  storeInt(currentMode, eeAddr);
+  // storeInt(currentMode, eeAddr);
   EEPROM.commit();
 }
 
@@ -138,7 +140,7 @@ void settingsLoad()
   accessPin = loadInt(eeAddr);
   stripselect = loadInt(eeAddr);
   striplen = loadInt(eeAddr);
-  currentMode = loadInt(eeAddr);
+  // currentMode = loadInt(eeAddr);
 }
 
 void handleSketchUpdate()
@@ -364,25 +366,32 @@ void setupAP()
   Serial.println(myIP);
 }
 
-void setupSTA()
+void setupSTA(bool silent)
 {
   currentMode = STA_MODE;
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
+  if(!silent)
+  Serial.println();
+  // timeout variable.
   int i = 0;
   while(WiFi.status() != WL_CONNECTED)
   {
     delay(500);
+    if(!silent)
     Serial.print(".");
+    // if button pressed switch mode.
+    wifiModeHandling();
     i++;
     if(i == 10)
     {
-      currentMode = AP_MODE;
-      setupAP();
+      if(!silent)
+      Serial.println("Unable to connect");
       return;
     }
   }
+  if(!silent)
   Serial.println();
   printWifiStatus();
 }
@@ -391,7 +400,6 @@ void wifiModeHandling()
 {
   if(!digitalRead(AP_BUTTON))
   {
-    Serial.println("got here");
     if(currentMode == STA_MODE)
     {
       Serial.println("mode is now AP_MODE");
@@ -400,9 +408,22 @@ void wifiModeHandling()
     else
     {
       Serial.println("mode is now STA_MODE");
-      setupSTA();
+      // list to output that we are connecting
+      setupSTA(false);
     }
     while(!digitalRead(AP_BUTTON)) delay(50);
+  }
+}
+
+void setupWifi(bool silent)
+{
+  if(currentMode == STA_MODE)
+  {
+    setupSTA(silent);
+  }
+  else if(currentMode == AP_MODE)
+  {
+    setupAP();
   }
 }
 
@@ -415,12 +436,10 @@ void setup() {
 
   pinMode(AP_BUTTON, INPUT_PULLUP);
 
-  WiFi.disconnect();
-  // start connecting. will switch to Access Point
-  // if no connections can be made.
-  setupSTA();
+  // setup wifi
+  setupWifi(false);
   // enable OTA
-  Serial.setDebugOutput(true);
+  // Serial.setDebugOutput(true);
   OTA.begin(OTAPORT);
 
   Serial.println("done setting up pins, and WifiMode.");
@@ -449,9 +468,11 @@ void loop() {
   if(currentMode == STA_MODE)
   {
     // check if we are still connected.
-    while(WiFi.status() != WL_CONNECTED)
+    if(WiFi.status() != WL_CONNECTED)
     {
-      setupSTA();
+      // don't list anything to the serial output.
+      // but still try to connect.
+      setupSTA(true);
     }
     // enable ledstrip animations.
     handleStrips();

@@ -2,6 +2,10 @@
 
 void setupStrips(int striplen)
 {
+    // reset control pins.
+    pinMode(14, INPUT);
+    pinMode(13, INPUT);
+
     if(striplen <= 1 || striplen >= 1000)
     {
         striplen = 1;
