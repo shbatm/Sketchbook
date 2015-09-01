@@ -15,6 +15,14 @@ void setup()
     pinMode(ANODE, OUTPUT);
     digitalWrite(ANODE, HIGH);
     digitalWrite(KATHODE, LOW);
+
+    pinMode(3, OUTPUT);
+    pinMode(5, OUTPUT);
+    pinMode(6, OUTPUT);
+    pinMode(9, OUTPUT);
+    
+    digitalWrite(3, HIGH);
+    digitalWrite(5, LOW);
 }
 
 void loop()
