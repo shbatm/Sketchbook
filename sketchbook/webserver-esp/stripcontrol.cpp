@@ -5,6 +5,8 @@ void setupStrips(int striplen)
     // reset control pins.
     pinMode(14, INPUT);
     pinMode(13, INPUT);
+    pinMode(14, OUTPUT);
+    pinMode(13, OUTPUT);
 
     if(striplen <= 1 || striplen >= 1000)
     {
@@ -17,7 +19,7 @@ void setupStrips(int striplen)
     if(stripselect == WS2812)
     {
         // amount, pin
-        setupWS2812(striplen, 14);
+        setupWS2812(striplen, 13);
     }
     if(stripselect == WS2801)
     {

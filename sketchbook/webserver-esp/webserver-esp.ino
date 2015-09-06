@@ -4,16 +4,17 @@
 #include <ESP8266mDNS.h>
 #include <EEPROM.h>
 
+#include <otaupload.h>
+
 #include "html.h"
 #include "stripcontrol.h"
 #include "effectParse.h"
 
-#define AP_BUTTON       12
+#define AP_BUTTON       0// 12
 #define SERIALBAUD      115200
 #define EFFECTPORT      1337
 #define WEBSERVERPORT   80
 #define EEPROMSIZE      1024
-#define OTAPORT         48266
 #define SERVERTEST      true
 
 
@@ -35,6 +36,12 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
+typedef struct {
+  String board_name;
+  String sta_ssid;
+  String sta_pass;
+} boardSettings_t;
+
 // select an initial mode.
 enum {STA_MODE, AP_MODE};
 int currentMode = STA_MODE;
@@ -43,8 +50,6 @@ int currentMode = STA_MODE;
 int stripselect = WS2801;
 // select an initial length.
 int striplen = 1;
-
-WiFiUDP OTA;
 
 ESP8266WebServer server(WEBSERVERPORT);
 
@@ -141,50 +146,6 @@ void settingsLoad()
   stripselect = loadInt(eeAddr);
   striplen = loadInt(eeAddr);
   // currentMode = loadInt(eeAddr);
-}
-
-void handleSketchUpdate()
-{
-  if (OTA.parsePacket()) {
-    IPAddress remote = OTA.remoteIP();
-    int cmd  = OTA.parseInt();
-    int port = OTA.parseInt();
-    int size   = OTA.parseInt();
-
-    Serial.print("Update Start: ip:");
-    Serial.print(remote);
-    Serial.printf(", port:%d, size:%d\n", port, size);
-    uint32_t startTime = millis();
-
-    WiFiUDP::stopAll();
-
-    if(!Update.begin(size)){
-      Serial.println("Update Begin Error");
-      return;
-    }
-
-    WiFiClient client;
-    if (client.connect(remote, port)) {
-
-      uint32_t written;
-      while(!Update.isFinished()){
-        written = Update.write(client);
-        if(written > 0) client.print(written, DEC);
-      }
-      Serial.setDebugOutput(false);
-
-      if(Update.end()){
-        client.println("OK");
-        Serial.printf("Update Success: %u\nRebooting...\n", millis() - startTime);
-        ESP.restart();
-      } else {
-        Update.printError(client);
-        Update.printError(Serial);
-      }
-    } else {
-      Serial.printf("Connect Failed: %u\n", millis() - startTime);
-    }
-  }
 }
 
 void printWifiStatus() {
@@ -292,11 +253,11 @@ void setup() {
   // setup mode switching pin
   pinMode(AP_BUTTON, INPUT_PULLUP);
 
-  // setup wifi
+  // setup wifi with output.
   setupWifi(false);
   // enable OTA
   // Serial.setDebugOutput(true);
-  OTA.begin(OTAPORT);
+  setupOta();
 
   Serial.println("done setting up pins, and WifiMode.");
 

@@ -5,9 +5,11 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-static WiFiUDP listener;
+static WiFiUDP OTA;
+
+#define OTAPORT         48266
 
 void setupOta();
-int handleSketchUpdate();
+void handleSketchUpdate();
 
 #endif

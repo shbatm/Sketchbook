@@ -4,6 +4,7 @@
 #include <otaupload.h>
 #include <esputils.h>
 
+
 void setup()
 {
     Serial.begin(115200);
@@ -15,10 +16,4 @@ void setup()
 void loop()
 {
     handleSketchUpdate();
-    while(!digitalRead(0))
-    {
-        handleSketchUpdate();
-        Serial.println("Hello World!");
-        delay(0);
-    }
 }
