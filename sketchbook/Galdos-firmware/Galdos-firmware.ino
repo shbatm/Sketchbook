@@ -3,8 +3,12 @@
     By Duality.
 */
 
+#include <ESP8266WiFi.h>
+
 #include <Ticker.h>
 #include <Servo.h>
+
+#include <otaupload.h>
 
 // define servo pins (SPIN)
 #define ROTATION_SPIN 4
@@ -39,8 +43,8 @@ servo_t servos[NUM_SPINS];
 #define HALF_ROTATION (MAX_ROTATION/2)
 
 // create tickers for setting servo speeds.
-// speed is time/degree where time in milliseconds.
-float servoSpeed = 1000/180;
+// speed is time/degree where time in seconds
+float servoSpeed = (3.0/180.0);
 Ticker servoSpeedControl;
 
 void setupServos()
@@ -65,28 +69,79 @@ void setupServos()
 
 void controlServoPos()
 {
+    uint8_t current;
+    uint8_t goal;
+    Servo servo;
+    for(int i = 0; i < NUM_SERVOS; i++)
+    {
+        current = servos[i].current;
+        goal = servos[i].goal;
+        servo = servos[i].servo;
 
+        // if servo already in position go to the next servo.
+        if(current == goal)
+        {
+            continue;
+        }
+        // if servo position less then goal position increment
+        // the servo position.
+        else if(current < goal)
+        {
+            current++;
+        }
+        // if servo position
+        else if(current > goal)
+        {
+            current--;
+        }
+        // store adjust value if adjusted
+        servos[i].current = current;
+        servo.write(current);
+    }
+}
+
+
+
+void setServoGoal(int servoID, uint8_t newGoal)
+{
+    // check for valid values
+    if(servoID < ROTATION || servoID > BASE)
+    {
+        return;
+    }
+    servos[servoID].goal = newGoal;
 }
 
 void centerServos()
 {
+    // center all the servo's
     for(int i = 0; i < NUM_SPINS; i++)
     {
-        servos[i].servo.write(HALF_ROTATION);
+        setServoGoal(i, HALF_ROTATION);
     }
-}
-
-void setServoGoal()
-{
-
 }
 
 void setup()
 {
+    Serial.begin(115200);
+    Serial.println("");
+
+    setupOta();
+
     setupServos();
     centerServos();
 }
 
 void loop()
 {
+    setServoGoal(BASE, 0);
+    setServoGoal(ROTATION, 0);
+    setServoGoal(HEAD, 0);
+    setServoGoal(BOTTOM, 0);
+    delay(1000);
+    setServoGoal(BASE, 180);
+    setServoGoal(ROTATION, 180);
+    setServoGoal(HEAD, 180);
+    setServoGoal(BOTTOM, 180);
+    delay(1000);
 }
