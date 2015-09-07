@@ -37,7 +37,7 @@ typedef struct
     uint8_t current;
 } servo_t;
 
-servo_t servos[NUM_SPINS];
+servo_t servos[NUM_SERVOS];
 
 #define MAX_ROTATION 180
 #define MIN_ROTATION 0
@@ -61,7 +61,7 @@ void setupServos()
     servos[BASE].pin = BASE_SPIN;
     // initialize servo pins to output
     // and attach the servos to each pin.
-    for(int i = 0; i < NUM_SPINS; i++)
+    for(int i = 0; i < NUM_SERVOS; i++)
     {
         pinMode(servos[i].pin, OUTPUT);
         servos[i].servo.attach(servos[i].pin);
@@ -104,9 +104,10 @@ void controlServoPos()
     }
 }
 
+// update the servos to thier new positions.
 void updateServos()
 {
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < NUM_SERVOS; i++)
     {
         servos[i].servo.write(servos[i].current);
     }
@@ -116,17 +117,17 @@ void updateServos()
 void setServoGoal(int servoID, uint8_t newGoal)
 {
     // check for valid values
-    if(servoID < ROTATION || servoID > BASE)
-    {
-        return;
-    }
+    // if(servoID < ROTATION || servoID > BASE)
+    // {
+    //     return;
+    // }
     servos[servoID].goal = newGoal;
 }
 
 void centerServos()
 {
     // center all the servo's
-    for(int i = 0; i < NUM_SPINS; i++)
+    for(int i = 0; i < NUM_SERVOS; i++)
     {
         setServoGoal(i, HALF_ROTATION);
     }
@@ -149,9 +150,37 @@ void printWifiStatus() {
   Serial.println(" dBm");
 }
 
+// print basic packet info.
+void printPacketInfo(int packetSize)
+{
+    Serial.printf("packet size: %d ", packetSize);
+    Serial.print("from: ");
+    Serial.print(GCU.remoteIP());
+    Serial.printf(" port: %d\n", GCU.remotePort());
+}
+
+// handle udp packet receiving.
 void handleGcuInput()
 {
-
+    int cb = GCU.parsePacket();
+    if(cb)
+    {
+        // print basic info on the packet.
+        printPacketInfo(cb);
+        // set all the servo's depending on the bytes in the packet.
+        // a byte a servo.
+        for(int i = 0; i < NUM_SERVOS; i++)
+        {
+            uint8_t value = GCU.read();
+            if(value >= 180)
+            {
+                value = 180;
+            }
+            // print debug info. and set a goal for the servo.
+            Serial.println(String(i) + ": " + String(value));
+            setServoGoal(i, value);
+        }
+    }
 }
 
 void setup()
