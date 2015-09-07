@@ -4,6 +4,7 @@
 */
 
 #include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
 
 #include <Ticker.h>
 #include <Servo.h>
@@ -46,6 +47,10 @@ servo_t servos[NUM_SPINS];
 // speed is time/degree where time in seconds
 float servoSpeed = (3.0/180.0);
 Ticker servoSpeedControl;
+
+// open udp port for servo controll.
+// glados controle unit input.
+WiFiUDP GCU;
 
 void setupServos()
 {
@@ -96,10 +101,16 @@ void controlServoPos()
         }
         // store adjust value if adjusted
         servos[i].current = current;
-        servo.write(current);
     }
 }
 
+void updateServos()
+{
+    for(int i = 0; i < 4; i++)
+    {
+        servos[i].servo.write(servos[i].current);
+    }
+}
 
 
 void setServoGoal(int servoID, uint8_t newGoal)
@@ -121,12 +132,44 @@ void centerServos()
     }
 }
 
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
+}
+
+void handleGcuInput()
+{
+
+}
+
 void setup()
 {
     Serial.begin(115200);
     Serial.println("");
 
-    setupOta();
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    WiFi.begin("www.tkkrlab.nl", "hax4or2the2paxor3");
+    while(WiFi.status() != WL_CONNECTED)
+    {
+        Serial.print(".");
+        delay(500);
+    }
+    printWifiStatus();
+
+    GCU.begin(1337);
 
     setupServos();
     centerServos();
@@ -134,14 +177,6 @@ void setup()
 
 void loop()
 {
-    setServoGoal(BASE, 0);
-    setServoGoal(ROTATION, 0);
-    setServoGoal(HEAD, 0);
-    setServoGoal(BOTTOM, 0);
-    delay(1000);
-    setServoGoal(BASE, 180);
-    setServoGoal(ROTATION, 180);
-    setServoGoal(HEAD, 180);
-    setServoGoal(BOTTOM, 180);
-    delay(1000);
+    handleGcuInput();
+    updateServos();
 }
