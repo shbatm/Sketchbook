@@ -1,7 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <SPI.h>
-#include "telnet.h"
 
 const char *ssid = "www.tkkrlab.nl";
 const char *pass = "hax4or2the2paxor3";
@@ -13,6 +12,17 @@ ADC_MODE(ADC_VCC);
 #define SIGLDIF(X) (X << 1)
 #define STARTBIT (1 << 2)
 #define SELPIN 5
+
+WiFiUDP GCU;
+
+// typedef struct
+// {
+//   int value;
+//   int offset;
+//   int range;
+// } adcChanSpec_t;
+
+// adcChanSpec_t rotation {0, 0, 0};
 
 uint16_t readAnalogChannel(int channel)
 {
@@ -63,6 +73,94 @@ uint16_t readAnalogChannel(int channel)
   return (reading);
 }
 
+int readRangedAdcChannel(int ch, int range, bool isInv)
+{
+  int adcVal = readAnalogChannel(ch);
+  int ranged = map(adcVal, 0, 4096, 0, range);
+  if(isInv)
+  {
+    return (180 - ranged);
+  }
+  else
+  {
+    return ranged;
+  }
+}
+
+void sendAdcPacket()
+{
+  static int previous;
+  static int current;
+  static int offset = 2;
+
+  int rotation = readAnalogChannel(1);
+  int rotStart = 0;
+  int rotEnd = 4096;
+  rotation = map(rotation, rotStart, rotEnd, 0, 180);
+
+  int bottom = readAnalogChannel(2);
+  int botStart = 1600;
+  int botEnd = 2800;
+  if(bottom < botStart)
+  {
+    bottom = botStart;
+  }
+  bottom = map(bottom, botStart, botEnd, 0, 180);
+  bottom = 180 - bottom;
+
+  int head = readAnalogChannel(0);
+  int headStart = 1470;
+  int headEnd = 3100;
+  head = map(head, headStart, headEnd, 0, 180);
+  if(head < 50)
+  {
+    head = 50;
+  }
+  if(head > 130)
+  {
+    head = 130;
+  }
+  // invert motion on the head.
+  head = 180 - head;
+
+  int base = readAnalogChannel(3);
+  int baseStart = 1600;
+  int baseEnd = 4096;
+  if(base < baseStart)
+  {
+    base = baseStart;
+  }
+  base = map(base, baseStart, baseEnd, 0, 180);
+
+  // Serial.printf("0:%d, 1:%d, 2:%d, 3:%d \n",
+  //                 rotation,
+  //                 bottom,
+  //                 head,
+  //                 base);
+
+  current = (rotation + bottom + head + base);
+  bool isSame = ((previous < (current+offset)) && (previous > (current - offset)));
+  if(!isSame)
+  {
+    // Serial.printf("isSame: %s \n", isSame ? "True" : "False");
+
+    // Serial.printf("0:%d, 1:%d, 2:%d, 3:%d \n",
+    //               rotation,
+    //               bottom,
+    //               head,
+    //               base);
+
+    GCU.beginPacket("10.42.4.185", 1337);
+    GCU.write(rotation);
+    GCU.write(bottom);
+    GCU.write(head);
+    GCU.write(base);
+    GCU.endPacket();
+  }
+
+  previous = current;
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -80,40 +178,19 @@ void setup()
     }
     Serial.println();
 
-    setupTelnet();
-
     Serial.print("Ip: ");
     Serial.println(WiFi.localIP());
+
+    GCU.begin(1337);
+
     SPI.setFrequency(10e6);
     SPI.setBitOrder(MSBFIRST);
     SPI.setDataMode(SPI_MODE0);
     SPI.begin();
 }
 
-static unsigned long current, previous;
-static int interval = 100;
-
-void telnetsendtest()
-{
-    current = millis();
-    if(current - previous >= interval)
-    {
-        previous = current;
-        sendTelnet("Test\n");
-    }
-}
-
 void loop()
 {
-    current = millis();
-    if(current - previous >= interval)
-    {
-        previous = current;
-        sendTelnet("\u001B[2J");
-        int i = 0;
-        for(i; i<=7; i++)
-            sendTelnet(String("channel(") + String(i) + ") " + String(readAnalogChannel(i)) + "\n");
-        sendTelnet(String("vcc: ") + String(ESP.getVcc()) + "\n");
-    }
-    handleTelnet();
+  sendAdcPacket();
+  delay(100);
 }

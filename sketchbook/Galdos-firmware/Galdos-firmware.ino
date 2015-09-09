@@ -110,7 +110,9 @@ void updateServos()
     for(int i = 0; i < NUM_SERVOS; i++)
     {
         servos[i].servo.write(servos[i].current);
+        // Serial.printf("%d: %d   ", i, servos[i].current);
     }
+    // Serial.println();
 }
 
 
@@ -177,7 +179,7 @@ void handleGcuInput()
                 value = 180;
             }
             // print debug info. and set a goal for the servo.
-            Serial.println(String(i) + ": " + String(value));
+            // Serial.println(String(i) + ": " + String(value));
             setServoGoal(i, value);
         }
     }
