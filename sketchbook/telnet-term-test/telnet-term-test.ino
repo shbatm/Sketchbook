@@ -2,8 +2,8 @@
 #include <WiFiUdp.h>
 #include <SPI.h>
 
-const char *ssid = "www.tkkrlab.nl";
-const char *pass = "hax4or2the2paxor3";
+const char *ssid = "GLaDOS";
+const char *pass = "strexcorp";
 
 ADC_MODE(ADC_VCC);
 
@@ -132,11 +132,11 @@ void sendAdcPacket()
   }
   base = map(base, baseStart, baseEnd, 0, 180);
 
-  // Serial.printf("0:%d, 1:%d, 2:%d, 3:%d \n",
-  //                 rotation,
-  //                 bottom,
-  //                 head,
-  //                 base);
+  Serial.printf("0:%d, 1:%d, 2:%d, 3:%d \n",
+                  rotation,
+                  bottom,
+                  head,
+                  base);
 
   current = (rotation + bottom + head + base);
   bool isSame = ((previous < (current+offset)) && (previous > (current - offset)));
@@ -150,7 +150,7 @@ void sendAdcPacket()
     //               head,
     //               base);
 
-    GCU.beginPacket("10.42.4.185", 1337);
+    GCU.beginPacket("192.168.4.1", 1337);
     GCU.write(rotation);
     GCU.write(bottom);
     GCU.write(head);

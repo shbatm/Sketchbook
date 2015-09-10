@@ -12,9 +12,9 @@
 #include <otaupload.h>
 
 // define servo pins (SPIN)
-#define ROTATION_SPIN 4
-#define BOTTOM_SPIN 5
-#define HEAD_SPIN 15
+#define ROTATION_SPIN 14
+#define BOTTOM_SPIN 16
+#define HEAD_SPIN 12
 #define BASE_SPIN 13
 
 // keep an array of servos/pins.
@@ -168,7 +168,7 @@ void handleGcuInput()
     if(cb)
     {
         // print basic info on the packet.
-        printPacketInfo(cb);
+        // printPacketInfo(cb);
         // set all the servo's depending on the bytes in the packet.
         // a byte a servo.
         for(int i = 0; i < NUM_SERVOS; i++)
@@ -178,8 +178,12 @@ void handleGcuInput()
             {
                 value = 180;
             }
+            if(value <= 0)
+            {
+                value = 0;
+            }
             // print debug info. and set a goal for the servo.
-            // Serial.println(String(i) + ": " + String(value));
+            Serial.println(String(i) + ": " + String(value));
             setServoGoal(i, value);
         }
     }
@@ -190,15 +194,12 @@ void setup()
     Serial.begin(115200);
     Serial.println("");
 
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
-    WiFi.begin("www.tkkrlab.nl", "hax4or2the2paxor3");
-    while(WiFi.status() != WL_CONNECTED)
-    {
-        Serial.print(".");
-        delay(500);
-    }
+    // setup a accespoint.
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP("GLaDOS", "strexcorp");
     printWifiStatus();
+
+    setupOta();
 
     GCU.begin(1337);
 
@@ -210,4 +211,5 @@ void loop()
 {
     handleGcuInput();
     updateServos();
+    handleSketchUpdate();
 }
