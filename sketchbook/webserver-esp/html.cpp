@@ -92,6 +92,11 @@ String getAvailableNetworks()
       networks += ")";
       networks += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "<br>" : "*<br>";
       delay(10);
+      // limit search to 5 ssid's
+      if(i == 5)
+      {
+        return networks;
+      }
     }
   }
   return networks;
