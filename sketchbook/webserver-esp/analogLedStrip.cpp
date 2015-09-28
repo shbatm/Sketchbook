@@ -15,9 +15,10 @@ void setupAnalogStrip()
     pinMode(REDPIN, OUTPUT);
     pinMode(GREENPIN, OUTPUT);
     pinMode(BLUEPIN, OUTPUT);
-    analogWrite(REDPIN, 0);
-    analogWrite(GREENPIN, 0);
-    analogWrite(BLUEPIN, 0);
+    digitalWrite(REDPIN, 0);
+    digitalWrite(GREENPIN, 0);
+    digitalWrite(BLUEPIN, 0);
+    yield();
     colors = colorinc();
 }
 
