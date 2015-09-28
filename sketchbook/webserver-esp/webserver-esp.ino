@@ -18,10 +18,22 @@
 #define SERVERTEST      true
 
 
+static void ICACHE_FLASH_ATTR __attribute__((optimize("O2"))) send_ws_0(uint8_t gpio){
+  uint8_t i;
+  i = 4; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << gpio);
+  i = 9; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << gpio);
+}
+
+static void ICACHE_FLASH_ATTR __attribute__((optimize("O2"))) send_ws_1(uint8_t gpio){
+  uint8_t i;
+  i = 8; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << gpio);
+  i = 6; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << gpio);
+}
+
 // set initial board name and wifi settings.
 String board_name = "TkkrEsp-01";
 String sta_ssid = "www.tkkrlab.nl";
-String sta_pass = "apassword";
+String sta_pass = "hax4or2the2paxor3";
 
 // set an initial pincode.
 int accessPin = 1234;
@@ -36,12 +48,6 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
-typedef struct {
-  String board_name;
-  String sta_ssid;
-  String sta_pass;
-} boardSettings_t;
-
 // select an initial mode.
 enum {STA_MODE, AP_MODE};
 int currentMode = STA_MODE;
@@ -50,6 +56,25 @@ int currentMode = STA_MODE;
 int stripselect = WS2801;
 // select an initial length.
 int striplen = 1;
+
+/*
+  stored are:
+  board_name,
+  sta ssid,
+  sta pass,
+  accesPin,
+  stripselect,
+  currentMode
+  */
+// typedef struct
+// {
+//   String board_name,
+//   String sta_ssid,
+//   String sta_pass,
+//   int accesPin,
+//   int stripselect,
+//   int currentMode,
+// } board_settings_t;
 
 ESP8266WebServer server(WEBSERVERPORT);
 
@@ -132,7 +157,6 @@ void settingsStore()
   storeInt(accessPin, eeAddr);
   storeInt(stripselect, eeAddr);
   storeInt(striplen, eeAddr);
-  // storeInt(currentMode, eeAddr);
   EEPROM.commit();
 }
 
@@ -145,7 +169,6 @@ void settingsLoad()
   accessPin = loadInt(eeAddr);
   stripselect = loadInt(eeAddr);
   striplen = loadInt(eeAddr);
-  // currentMode = loadInt(eeAddr);
 }
 
 void printWifiStatus() {
@@ -241,6 +264,20 @@ void setupWifi(bool silent)
   }
 }
 
+void setupWebserver()
+{
+  // attach directories and file handlers.
+  server.on("/", handleRoot);
+  server.on("/ledsettings", handleLedSettings);
+  server.on("/wifisettings", handleWiFiSettings);
+  // start the server
+  server.begin();
+  Serial.println("done setting up server");
+  // request a hostname
+  WiFi.hostname(board_name);
+  Serial.printf("Hostename set: %s\n", board_name.c_str());
+}
+
 void setup() {
   Serial.begin(SERIALBAUD);
   Serial.println();
@@ -253,27 +290,21 @@ void setup() {
   // setup mode switching pin
   pinMode(AP_BUTTON, INPUT_PULLUP);
 
+  // setup strips for the first time (initialize some pointers and stuff.)
+  setupStrips(striplen);
+
   // setup wifi with output.
   setupWifi(false);
   // enable OTA
-  // Serial.setDebugOutput(true);
+  Serial.setDebugOutput(true);
   setupOta();
 
   Serial.println("done setting up pins, and WifiMode.");
 
   /* Setup server side things.*/
-  server.on("/", handleRoot);
-  server.on("/ledsettings", handleLedSettings);
-  server.on("/wifisettings", handleWiFiSettings);
-
-  server.begin();
-  Serial.println("done setting up server");
-
+  setupWebserver();
   // setup the effect parser.
   setupEffectParse(EFFECTPORT);
-
-  // setup strips for the first time (initialize some pointers and stuff.)
-  setupStrips(striplen);
 }
 
 void loop() {
@@ -290,6 +321,13 @@ void loop() {
       // don't list anything to the serial output.
       // but still try to connect.
       setupSTA(true);
+      if(WiFi.status() == WL_CONNECTED)
+      {
+        // if reconnected restart anything that uses a port.
+        setupOta();
+        setupWebserver();
+        setupEffectParse(EFFECTPORT);
+      }
     }
     // enable ledstrip animations.
     handleStrips();

@@ -3,6 +3,7 @@
 
 #include <SPI.h>
 #include "fadeColor.h"
+#include "rainbow.h"
 
 void setupWS2801(int, int);
 void setWS2801Pixel(int, int, int, int);

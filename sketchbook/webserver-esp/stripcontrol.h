@@ -22,6 +22,8 @@
 #define GREEN 1
 #define BLUE 2
 
+#define WS2812_PIN 14
+
 // holds data for led control.
 typedef struct {
   int pincode;

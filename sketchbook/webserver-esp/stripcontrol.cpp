@@ -3,10 +3,7 @@
 void setupStrips(int striplen)
 {
     // reset control pins.
-    pinMode(14, INPUT);
-    pinMode(13, INPUT);
-    pinMode(14, OUTPUT);
-    pinMode(13, OUTPUT);
+    pinMode(WS2812_PIN, INPUT);
 
     if(striplen <= 1 || striplen >= 1000)
     {
@@ -19,7 +16,7 @@ void setupStrips(int striplen)
     if(stripselect == WS2812)
     {
         // amount, pin
-        setupWS2812(striplen, 13);
+        setupWS2812(striplen, WS2812_PIN);
     }
     if(stripselect == WS2801)
     {
@@ -71,11 +68,18 @@ void handleStrips()
         {
             fadeWS2812(speed, brightness);
             updateWS2812();
+            delay(1);
         }
     }
+    // rainbow effect
     else if(stripcontrol.effect == DIGITALFADING)
     {
-
+        int brightness = stripcontrol.brightness+1;
+        if(stripselect = WS2812)
+        {
+            rainbowWs2812(speed, brightness);
+            updateWS2812();
+        }
     }
 }
 

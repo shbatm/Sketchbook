@@ -54,15 +54,14 @@ void applyEffectData()
   if(accessPin != stripcontrol.pincode)
   {
     // debug print some info. 
-    Serial.println("rejecting packet");
-    Serial.println("pins: ");
-    Serial.printf("%d:%d\n", accessPin, stripcontrol.pincode);
+    Serial.println("rejecting packet.");
+    Serial.printf("set:%d\ngot:%d\n", accessPin, stripcontrol.pincode);
     return;
   }
   else
   {
-    Serial.println("pins: ");
-    Serial.printf("%d:%d\n", accessPin, stripcontrol.pincode);
+    Serial.println("pins:");
+    Serial.printf("set:%d\ngot:%d\n", accessPin, stripcontrol.pincode);
     // parse and store in struct.
     stripcontrol.effect = effectArg("effect").toInt();
     stripcontrol.brightness = effectArg("brightness").toInt();

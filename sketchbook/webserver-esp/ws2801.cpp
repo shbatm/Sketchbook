@@ -1,4 +1,5 @@
 #include "ws2801.h"
+#include "stripcontrol.h"
 
 static uint8_t *buffer[3] = {NULL, NULL, NULL};
 
@@ -38,9 +39,9 @@ void setupWS2801(int freq, int len)
 
 void setWS2801Pixel(int pos, int r, int g, int b)
 {
-    buffer[0][pos] = r;
-    buffer[1][pos] = g;
-    buffer[2][pos] = b;
+    buffer[RED][pos] = r;
+    buffer[GREEN][pos] = g;
+    buffer[BLUE][pos] = b;
 }
 
 void setWS2801Strip(int r, int g, int b)
@@ -62,9 +63,9 @@ void fadeWS2801(int speed, int brightness)
 
     cinterval = speed+1;
     float brightnessFactor = (float)(((float)brightness)/100);
-    int r = colors[0] * brightnessFactor;
-    int g = colors[1] * brightnessFactor;
-    int b = colors[2] * brightnessFactor;
+    int r = colors[RED] * brightnessFactor;
+    int g = colors[GREEN] * brightnessFactor;
+    int b = colors[BLUE] * brightnessFactor;
 
     setWS2801Strip(r, g, b);
 }
@@ -73,9 +74,9 @@ void updateWS2801()
 {
     for(int i = 0; i < striplen; i++)
     {
-        SPI.transfer(buffer[0][i]);
-        SPI.transfer(buffer[1][i]);
-        SPI.transfer(buffer[2][i]);
+        SPI.transfer(buffer[RED][i]);
+        SPI.transfer(buffer[GREEN][i]);
+        SPI.transfer(buffer[BLUE][i]);
     }
     delayMicroseconds(500);
 }
