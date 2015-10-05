@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "fadeColor.h"
+#include "stripcontrol.h"
 
 #define REDPIN 5
 #define GREENPIN 4

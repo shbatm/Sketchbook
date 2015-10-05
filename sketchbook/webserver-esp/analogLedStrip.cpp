@@ -1,5 +1,4 @@
 #include "analogLedStrip.h"
-#include "stripcontrol.h"
 
 static unsigned long ccurrent = 0;
 static unsigned long cprevious = 0;

@@ -10,7 +10,6 @@
 #include <WiFiUdp.h>
 #include "stripcontrol.h"
 
-extern stripcontrol_t stripcontrol;
 extern String board_name;
 extern int accessPin;
 

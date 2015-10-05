@@ -22,10 +22,6 @@ const uint8_t max_letters_visible = screen_width/5;
 
 void writeLPBuffer(uint8_t *inbuff, int size)
 {
-    if(size > buffersize)
-    {
-        return;
-    }
     for(int i = 0;i<size;i++)
     {
         buffer[i] = inbuff[i];
@@ -209,7 +205,7 @@ void putChar(char character)
 {
     for(int i = 0 ; i < 5; i++)
     {
-        buffer[i] = font[character-' '][i];
+        buffer[i] = reverse(font[character-' '][i]) >> 1;
     }
 }
 

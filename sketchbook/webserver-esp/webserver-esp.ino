@@ -6,8 +6,8 @@
 
 #include <otaupload.h>
 
-#include "html.h"
 #include "stripcontrol.h"
+#include "html.h"
 #include "effectParse.h"
 
 #define AP_BUTTON       0// 12
@@ -17,27 +17,19 @@
 #define EEPROMSIZE      1024
 #define SERVERTEST      true
 
-
-static void ICACHE_FLASH_ATTR __attribute__((optimize("O2"))) send_ws_0(uint8_t gpio){
-  uint8_t i;
-  i = 4; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << gpio);
-  i = 9; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << gpio);
-}
-
-static void ICACHE_FLASH_ATTR __attribute__((optimize("O2"))) send_ws_1(uint8_t gpio){
-  uint8_t i;
-  i = 8; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << gpio);
-  i = 6; while (i--) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << gpio);
-}
-
 // set initial board name and wifi settings.
 String board_name = "TkkrEsp-01";
 String sta_ssid = "www.tkkrlab.nl";
 String sta_pass = "hax4or2the2paxor3";
 
+// select an initial mode.
+enum {STA_MODE, AP_MODE};
+int currentMode = STA_MODE;
+
 // set an initial pincode.
 int accessPin = 1234;
 
+// create a stripcontrol structure and clear it.
 stripcontrol_t stripcontrol = {
   .pincode = 0,
   .effect = 0,
@@ -48,12 +40,9 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
-// select an initial mode.
-enum {STA_MODE, AP_MODE};
-int currentMode = STA_MODE;
 
 // select intial ledstrip
-int stripselect = WS2801;
+int stripselect = ANALOGSTRIP;
 // select an initial length.
 int striplen = 1;
 
@@ -66,15 +55,25 @@ int striplen = 1;
   stripselect,
   currentMode
   */
-// typedef struct
-// {
-//   String board_name,
-//   String sta_ssid,
-//   String sta_pass,
-//   int accesPin,
-//   int stripselect,
-//   int currentMode,
-// } board_settings_t;
+typedef struct
+{
+  String board_name;
+  String sta_ssid;
+  String sta_pass;
+  uint16_t accesPin;
+  uint8_t stripselect;
+  uint8_t currentMode;
+} board_settings_t;
+
+board_settings_t default_settings
+{
+  .board_name = String("EspLight"),
+  .sta_ssid = String("EspLight"),
+  .sta_pass = String("EspLight"),
+  .accesPin = 0,
+  .stripselect = ANALOGSTRIP,
+  .currentMode = AP_MODE
+};
 
 ESP8266WebServer server(WEBSERVERPORT);
 
@@ -107,7 +106,7 @@ void storeInt(int value, int& addr)
   addr += i;
 }
 
-String loadString(int& addr)
+String loadString(int &addr)
 {
   String text = "";
   char read = EEPROM.read(addr);
@@ -146,10 +145,6 @@ void settingsStore()
   stripselect,
   currentMode
   */
-  for(int i = 0; i < 1024; i++)
-  {
-    storeInt(0, i);
-  }
   int eeAddr = 0;
   storeString(board_name, eeAddr);
   storeString(sta_ssid, eeAddr);

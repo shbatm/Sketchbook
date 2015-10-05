@@ -77,8 +77,13 @@ void handleStrips()
         int brightness = stripcontrol.brightness+1;
         if(stripselect = WS2812)
         {
-            rainbowWs2812(speed, brightness);
+            rainbowWS2812(speed, brightness);
             updateWS2812();
+        }
+        else if(stripselect == WS2801)
+        {
+            rainbowWS2801(speed, brightness);
+            updateWS2801();
         }
     }
 }

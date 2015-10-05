@@ -1,21 +1,27 @@
 #include "ws2801.h"
-#include "stripcontrol.h"
 
+// hold array of colors 
+// r[], g[], b[]
 static uint8_t *buffer[3] = {NULL, NULL, NULL};
 
-static int striplen;
+// length of ledstrip in chips
+static int ws2801_striplen;
 
+
+// timing variables.
 static unsigned long ccurrent = 0;
 static unsigned long cprevious = 0;
 static int cinterval = 10;
 
-static uint8_t *colors;
+// pointer to generated colors.
+static uint8_t *colors = NULL;
 
+/* setup basics like spi, allocate space for the pixels.*/
 void setupWS2801(int freq, int len)
 {
     SPI.begin();
     SPI.setFrequency(1e6);
-    striplen = len;
+    ws2801_striplen = len;
     colors = colorinc();
     // allocate space if run first time else free and allocate.
     if(buffer[0] == NULL && buffer[1] == NULL && buffer[2] == NULL)
@@ -37,6 +43,7 @@ void setupWS2801(int freq, int len)
     }
 }
 
+/* set a certain pixel to certain (r, g, b) values.*/
 void setWS2801Pixel(int pos, int r, int g, int b)
 {
     buffer[RED][pos] = r;
@@ -44,14 +51,16 @@ void setWS2801Pixel(int pos, int r, int g, int b)
     buffer[BLUE][pos] = b;
 }
 
+/* set a whole ledstrip to a single color.*/
 void setWS2801Strip(int r, int g, int b)
 {
-    for(int i = 0; i < striplen; i++)
+    for(int i = 0; i < ws2801_striplen; i++)
     {
         setWS2801Pixel(i, r, g, b);
     }
 }
 
+/* effect that fades all the leds from one color to another.*/
 void fadeWS2801(int speed, int brightness)
 {
     ccurrent = millis();
@@ -69,10 +78,38 @@ void fadeWS2801(int speed, int brightness)
 
     setWS2801Strip(r, g, b);
 }
+/* 
+    fade all the pixels individually from one color to the next.
+    creating a rainbow like effect.
+*/
+void rainbowWS2801(int speed, int brightness)
+{
+    cinterval = speed + 1;
+    ccurrent = millis();
+    if((ccurrent - cprevious) >= cinterval)
+    {
+        cprevious = ccurrent;
+        static int range = 0xff*3;
+        uint8_t buffer[3][ws2801_striplen];
+        int i, s;
+        colors = colorinc();
+        for(i = 0; i < ws2801_striplen; i++)
+        {
+            for(s = 0; s < range/ws2801_striplen; s++)
+                colors = colorinc();
+            float brightnessFactor = (float)(((float)brightness) / 100);
+            int r = colors[RED] * brightnessFactor;
+            int g = colors[GREEN] * brightnessFactor;
+            int b = colors[BLUE] * brightnessFactor;
+            setWS2801Pixel(i, r, g, b);
+        }
+    }
+}
 
+/* update the whole ledstrip with it's colors.*/
 void updateWS2801()
 {
-    for(int i = 0; i < striplen; i++)
+    for(int i = 0; i < ws2801_striplen; i++)
     {
         SPI.transfer(buffer[RED][i]);
         SPI.transfer(buffer[GREEN][i]);

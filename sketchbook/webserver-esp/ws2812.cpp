@@ -1,18 +1,22 @@
 #include "ws2812.h"
-#include "stripcontrol.h"
 
-static int striplen = 0;
+// holds the length of the ledstrip in pixels or chips.
+static int ws2812_striplen;
+// create a pointer of NeoPixelBus object type.
 NeoPixelBus *strip = NULL;
 
+// timing vairiables.
 static unsigned long ccurrent = 0;
 static unsigned long cprevious = 0;
 static int cinterval = 10;
 
+// variable that holds 
 static uint8_t *colors;
 
+/* setup the neopixel object, and clear the ledstrip. */
 void setupWS2812(uint16_t length, uint8_t pin)
 {
-    striplen = length;
+    ws2812_striplen = length;
     colors = colorinc();
     if(strip == NULL)
     {
@@ -27,15 +31,17 @@ void setupWS2812(uint16_t length, uint8_t pin)
     strip->Show();
 }
 
+/* set the ledstrip to a certain (r, g, b) value. */
 void setWS2812Strip(int r, int g, int b)
 {
-    for(int i = 0; i < striplen;i++)
+    for(int i = 0; i < ws2812_striplen;i++)
     {
         RgbColor color = RgbColor(r, g, b);
         strip->SetPixelColor(i, color);
     }
 }
 
+/* fade the whole ledstrip from one color to another. */
 void fadeWS2812(int speed, int brightness)
 {
     ccurrent = millis();
@@ -54,7 +60,11 @@ void fadeWS2812(int speed, int brightness)
     setWS2812Strip(r, g, b);
 }
 
-void rainbowWs2812(int speed, int brightness)
+/* 
+    fade all the pixels individually from one color to the next.
+    creating a rainbow like effect.
+*/
+void rainbowWS2812(int speed, int brightness)
 {
     cinterval = speed + 1;
     ccurrent = millis();
@@ -62,23 +72,25 @@ void rainbowWs2812(int speed, int brightness)
     {
         cprevious = ccurrent;
         static int range = 0xff*3;
-        uint8_t buffer[3][striplen];
+        uint8_t buffer[3][ws2812_striplen];
         int i, s;
-        uint8_t *color = colorinc();
-        for(i = 0; i < striplen; i++)
+        colors = colorinc();
+        for(i = 0; i < ws2812_striplen; i++)
         {
-            for(s = 0; s < range/striplen; s++)
-                color = colorinc();
+            for(s = 0; s < range/ws2812_striplen; s++)
+                colors = colorinc();
             float brightnessFactor = (float)(((float)brightness) / 100);
-            int r = color[RED] * brightnessFactor;
-            int g = color[GREEN] * brightnessFactor;
-            int b = color[BLUE] * brightnessFactor;
+            int r = colors[RED] * brightnessFactor;
+            int g = colors[GREEN] * brightnessFactor;
+            int b = colors[BLUE] * brightnessFactor;
             RgbColor rgbcolor = RgbColor(r, g, b);
             strip->SetPixelColor(i, rgbcolor);
         }
     }
 }
 
+
+/* update the while ledstrip. */
 void updateWS2812()
 {
     strip->Show();
