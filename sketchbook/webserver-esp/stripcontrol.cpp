@@ -75,7 +75,7 @@ void handleStrips()
     else if(stripcontrol.effect == DIGITALFADING)
     {
         int brightness = stripcontrol.brightness+1;
-        if(stripselect = WS2812)
+        if(stripselect == WS2812)
         {
             rainbowWS2812(speed, brightness);
             updateWS2812();

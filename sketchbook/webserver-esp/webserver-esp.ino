@@ -1,3 +1,13 @@
+/*
+  Author: Duality / Robert
+
+  This is Firmware for controlling ledstrips.
+  It includes a way of setting which strip is connected,
+  how long it is.
+  It also includes a Way of finding the device through
+  broadcastig a udp packets.
+  It als includes a way for controlling which effect is selected.
+*/
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
@@ -270,7 +280,7 @@ void setupWebserver()
   Serial.println("done setting up server");
   // request a hostname
   WiFi.hostname(board_name);
-  Serial.printf("Hostename set: %s\n", board_name.c_str());
+  Serial.printf("Hostname set: %s\n", board_name.c_str());
 }
 
 void setup() {

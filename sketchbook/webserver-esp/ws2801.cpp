@@ -21,6 +21,8 @@ void setupWS2801(int freq, int len)
 {
     SPI.begin();
     SPI.setFrequency(1e6);
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setDataMode(SPI_MODE0);
     ws2801_striplen = len;
     colors = colorinc();
     // allocate space if run first time else free and allocate.
@@ -115,5 +117,5 @@ void updateWS2801()
         SPI.transfer(buffer[GREEN][i]);
         SPI.transfer(buffer[BLUE][i]);
     }
-    delayMicroseconds(500);
+    delay(1);
 }
