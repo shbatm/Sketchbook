@@ -27,7 +27,7 @@
 #define EEPROMSIZE        1024
 #define SERVERTEST        true
 #define ENABLEOTA         true
-#define SERIALDEBUGOUTPUT false
+#define SERIALDEBUGOUTPUT true
 
 // set initial board name and wifi settings.
 String board_name = "EspLight-01";
@@ -71,25 +71,6 @@ int striplen = 1;
   stripselect,
   currentMode
   */
-typedef struct
-{
-  String board_name;
-  String sta_ssid;
-  String sta_pass;
-  uint16_t accesPin;
-  uint8_t stripselect;
-  uint8_t currentMode;
-} board_settings_t;
-
-board_settings_t default_settings
-{
-  .board_name = String("EspLight"),
-  .sta_ssid = String("EspLight"),
-  .sta_pass = String("EspLight"),
-  .accesPin = 0,
-  .stripselect = ANALOGSTRIP,
-  .currentMode = AP_MODE
-};
 
 ESP8266WebServer server(WEBSERVERPORT);
 
@@ -107,6 +88,7 @@ void storeString(String string, int& addr)
   {
     // write the bytes into the eeprom (flash)
     EEPROM.write(addr+i, str[i]);
+    delay(0);
   }
   addr += i;
 }
@@ -118,6 +100,7 @@ void storeInt(int value, int& addr)
   for(i = 0; i < sizeof(value); i++)
   {
     EEPROM.write(addr+i, (value>>(i*8)&0xff));
+    delay(0);
   }
   addr += i;
 }
@@ -132,6 +115,7 @@ String loadString(int &addr)
     text += read;
     addr++;
     read = EEPROM.read(addr);
+    delay(0);
   }
   addr++; //acount for zero terminator.
   return text;
@@ -146,6 +130,7 @@ bool magicStrPresent(int &addr)
   {
     text[i] = EEPROM.read(addr);
     addr++;
+    delay(0);
   }
   addr++;
   //acount for zero terminator
