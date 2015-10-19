@@ -14,11 +14,15 @@ extern String sta_ssid;
 extern String sta_pass;
 extern String board_name;
 
+extern String available_aps;
+
 extern int accessPin;
 
 extern ESP8266WebServer server;
 
 extern void settingsStore();
+
+String getAvailableNetworks();
 
 void handleStripControl();
 void handleWiFiSettings();

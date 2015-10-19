@@ -48,7 +48,6 @@ String getAvailableNetworks()
   else
   {
     networks += "Number of networks: " + String(n) + "<br>";
-    networks += "Found: <br>";
     for(int i = 0; i < n; i++)
     {
       networks += "<li>";
@@ -82,9 +81,6 @@ String generateWifiHtml()
     settingsStore();
   }
 
-  /* hold html that show which access points are available*/
-  String available_aps = getAvailableNetworks();
-
   String html = 
   "<!doctype html>"
   "<html lang=\"\">"
@@ -116,7 +112,7 @@ String generateWifiHtml()
   "              <label for=\"ssid\">SSID</label><br/><input type=\"text\" value=" + sta_ssid + " name=\"ssid\">"
   "              <label for=\"ssid\">password</label><br/><input type=\"text\" value=" + sta_pass + " name=\"pwd\">"
   "              <label for=\"ssid\">board name</label><br/><input type=\"text\" value=" + board_name + " name=\"boardname\">"
-  "              <label for=\"ssid\">esplight code</label><br/><input type=\"text\" value=" + String(accessPin) + " name=\"code\">"
+  "              <label for=\"ssid\">esplight code</label><br/><input type=\"text\" name=\"code\">"
   "              <input type=\"submit\" value=\"save\">"
   "              </form>"
   "            </div>"

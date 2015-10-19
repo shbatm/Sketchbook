@@ -20,15 +20,17 @@
 #include "html.h"
 #include "effectParse.h"
 
-#define AP_BUTTON       0// 12
-#define SERIALBAUD      115200
-#define EFFECTPORT      1337
-#define WEBSERVERPORT   80
-#define EEPROMSIZE      1024
-#define SERVERTEST      true
+#define AP_BUTTON         0// 12
+#define SERIALBAUD        115200
+#define EFFECTPORT        1337
+#define WEBSERVERPORT     80
+#define EEPROMSIZE        1024
+#define SERVERTEST        true
+#define ENABLEOTA         true
+#define SERIALDEBUGOUTPUT false
 
 // set initial board name and wifi settings.
-String board_name = "TkkrEsp-01";
+String board_name = "EspLight-01";
 String sta_ssid = "www.tkkrlab.nl";
 String sta_pass = "hax4or2the2paxor3";
 
@@ -38,6 +40,9 @@ int currentMode = STA_MODE;
 
 // set an initial pincode.
 int accessPin = 1234;
+
+String magicEepromWord = "deadbeaf";
+uint8_t magicWorldLen;
 
 // create a stripcontrol structure and clear it.
 stripcontrol_t stripcontrol = {
@@ -50,6 +55,7 @@ stripcontrol_t stripcontrol = {
   .changed = false
 };
 
+String available_aps;
 
 // select intial ledstrip
 int stripselect = ANALOGSTRIP;
@@ -131,6 +137,23 @@ String loadString(int &addr)
   return text;
 }
 
+// checks for the magic string in eeprom indicating valid settings.
+bool magicStrPresent(int &addr)
+{
+  char text[] = "deadbeaf";
+  uint8_t magicWordLen = magicEepromWord.length();
+  for(int i = 0; i < magicWordLen; i++)
+  {
+    text[i] = EEPROM.read(addr);
+    addr++;
+  }
+  addr++;
+  //acount for zero terminator
+  Serial.printf("\nread: %s \n", text);
+  Serial.printf("should be: %s \n", magicEepromWord.c_str());
+  return (String(text) == magicEepromWord);
+}
+
 int loadInt(int &addr)
 {
   int value = 0;
@@ -156,6 +179,7 @@ void settingsStore()
   currentMode
   */
   int eeAddr = 0;
+  storeString(magicEepromWord, eeAddr);
   storeString(board_name, eeAddr);
   storeString(sta_ssid, eeAddr);
   storeString(sta_pass, eeAddr);
@@ -168,12 +192,29 @@ void settingsStore()
 void settingsLoad()
 {
   int eeAddr = 0;
-  board_name = loadString(eeAddr);
-  sta_ssid = loadString(eeAddr);
-  sta_pass = loadString(eeAddr);
-  accessPin = loadInt(eeAddr);
-  stripselect = loadInt(eeAddr);
-  striplen = loadInt(eeAddr);
+
+  bool isValid = magicStrPresent(eeAddr);
+  // check if settings are valid;
+  Serial.print("settings are valid: ");
+  Serial.println(isValid ? "true" : "false");
+
+  if(isValid)
+  {
+    // valid settings found and load them.
+    board_name = loadString(eeAddr);
+    sta_ssid = loadString(eeAddr);
+    sta_pass = loadString(eeAddr);
+    accessPin = loadInt(eeAddr);
+    stripselect = loadInt(eeAddr);
+    striplen = loadInt(eeAddr);
+  }
+  else if(!isValid)
+  {
+    // no valid settings found.
+    // store valid settings.
+    Serial.println("invalid settings found loading defaults.");
+    settingsStore();
+  }
 }
 
 void printWifiStatus() {
@@ -282,6 +323,8 @@ void setupWebserver()
   // request a hostname
   WiFi.hostname(board_name);
   Serial.printf("Hostname set: %s\n", board_name.c_str());
+  // scan for wifi once.
+  available_aps = getAvailableNetworks();
 }
 
 void setup() {
@@ -302,7 +345,7 @@ void setup() {
   // setup wifi with output.
   setupWifi(false);
   // enable OTA
-  Serial.setDebugOutput(true);
+  Serial.setDebugOutput(SERIALDEBUGOUTPUT);
   setupOta();
 
   Serial.println("done setting up pins, and WifiMode.");
@@ -335,13 +378,16 @@ void loop() {
         setupEffectParse(EFFECTPORT);
       }
     }
-    // enable ledstrip animations.
+    // handle ledstrip animations.
     handleStrips();
-    // enable controle over effects.
+    // handle control over effects.
     handleEffectUpdate();
-    // enable switching to AP_MODE
+    // handle switching to AP_MODE
     wifiModeHandling();
   }
-  // allow uploading over OTA <dev>
-  handleSketchUpdate();
+  if(ENABLEOTA)
+  {
+    // allow uploading over OTA <dev>
+    handleSketchUpdate();
+  }
 }
