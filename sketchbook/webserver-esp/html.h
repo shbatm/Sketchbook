@@ -23,6 +23,7 @@ extern void settingsStore();
 void handleStripControl();
 void handleWiFiSettings();
 void handleLedSettings();
+void handleCss();
 void handleRoot();
 
 #endif

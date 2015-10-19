@@ -3,10 +3,10 @@
 
   This is Firmware for controlling ledstrips.
   It includes a way of setting which strip is connected,
-  how long it is.
+  and how long that ledstrip is.
   It also includes a Way of finding the device through
-  broadcastig a udp packets.
-  It als includes a way for controlling which effect is selected.
+  broadcastig a udp packet.
+  It also includes a way for controlling which effect is selected.
 */
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -244,7 +244,7 @@ void wifiModeHandling()
       Serial.println("mode is now AP_MODE");
       setupAP();
     }
-    /*acutally never gets here. but does if we allowed it to switch back.*/
+    /* actually never gets here. but does if we allowed it to switch back.*/
     // else
     // {
     //   Serial.println("mode is now STA_MODE");
@@ -275,6 +275,7 @@ void setupWebserver()
   server.on("/", handleRoot);
   server.on("/ledsettings", handleLedSettings);
   server.on("/wifisettings", handleWiFiSettings);
+  server.on("/css", handleCss);
   // start the server
   server.begin();
   Serial.println("done setting up server");
