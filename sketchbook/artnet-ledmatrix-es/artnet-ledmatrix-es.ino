@@ -1,3 +1,4 @@
+#include <SPI.h>
 #include <LedControl.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -51,7 +52,7 @@ void setupAP()
   WiFi.softAP(ssid, pass);
   Serial.println();
   IPAddress myIP = WiFi.softAPIP();
-  Serial.println(myIP);
+  // Serial.println(myIP);
 }
 
 void setupSTA()
@@ -89,6 +90,7 @@ void setup() {
   lc.shutdown(0, false);
   lc.setIntensity(0, 1);
   lc.clearDisplay(0);
+  lc.setRow(0, 0, 0xff);
   // serial for debugging.
   Serial.begin(115200);
   Serial.setDebugOutput(true);
@@ -103,10 +105,15 @@ void loop() {
   handleSketchUpdate();
   if(artnet.read() == ART_DMX)
   {
-    for(int i = 0;i < 8;i++)
+    uint8_t p = 0;
+    for(int x = 0;x < 8; x += 1)
     {
-      // data is in byte format so easy as this..
-      lc.setRow(0, i, artnet.getDmxFrame()[i]);
+      for(int y = 0; y < 8; y += 1)
+      {
+        uint8_t r = artnet.getDmxFrame()[p];
+        lc.setLed(0, x, y, r);
+        p += 3;
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 //We always have to include the library
+#include <SPI.h>
 #include "LedControl.h"
 
 /*
@@ -35,12 +36,13 @@ void clearLed(uint8_t x, uint8_t y)
 }
 
 void loop() {
-  for(int i = 0 ; i< 64; i++)
-  {
-    setLed(random(0, 8), random(0, 8));
-    clearLed(random(0, 8), random(0, 8));
-  }
-  delay(100);
+  setLed(0, 0);
+  // for(int i = 0 ; i< 64; i++)
+  // {
+  //   setLed(random(0, 8), random(0, 8));
+  //   clearLed(random(0, 8), random(0, 8));
+  // }
+  // delay(100);
 //  lc.setLed(0, 0, 0, true);
 //  lc.setLed(0, 1, 1, true);
 //  lc.setLed(0, 2, 2, true);
