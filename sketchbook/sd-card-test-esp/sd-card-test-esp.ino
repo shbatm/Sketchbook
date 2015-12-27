@@ -10,8 +10,8 @@
 
 const char* board_name = "3Dprinter";
 
-const char* ssid = "ssid";
-const char* pass = "pass";
+const char* ssid = "www.tkkrlab.nl";
+const char* pass = "hax4or2the2paxor3";
 
 Sd2Card card;
 SdVolume volume;
@@ -206,30 +206,82 @@ void setupSD()
     }
 }
 
-void listSd(int argc, String* argv)
+void printArguments(int argc, String* argv)
 {
+    Serial.print(String("argc: ") + argc + " arguments: ");
     for(int i = 0; i < argc; i++)
     {
         Serial.print(argv[i]);
-        Serial.print(", ");
+        Serial.print(' ');
     }
     Serial.println();
 }
 
+void listSd(int argc, String* argv)
+{
+    printArguments(argc, argv);
+    File file;
+    if(argc == 0)
+    {
+        // print root
+        file = SD.open("/");
+        printDirectory(file, 0);
+    }
+    else
+    {
+        for(int i = 0; i < argc; i++)
+        {
+            if(argv[i].endsWith("/"))
+            {
+                file = SD.open(argv[i]);
+            }
+            else
+            {
+                file = SD.open(argv[i] + "/");
+            }
+            Serial.println(argv[i] + ": ");
+            // printDirectory closes the file.
+            printDirectory(file, 0);
+        }
+    }
+}
+
+void cat(int argc, String* argv)
+{
+    File file;
+    for(int i = 0; i < argc; i++)
+    {
+        file = SD.open(argv[i]);
+        if(file.isDirectory())
+        {
+            Serial.println(String("cat: ") + argv[i] + ": " + "Is a Directory.");
+        }
+        else
+        {
+            while(file.available())
+            {
+                Serial.write((char)file.read());
+            }
+        }
+        // close file after writing.
+        file.close();
+    }
+}
+
 typedef struct {
-    String str_rep;
+    String name;
     void (*handle)(int, String* argv);
 } command_t;
 
 command_t commands[] = 
 {
     {
-        .str_rep = String("list"),
+        .name = String("list"),
         .handle = listSd,
     },
     {
-        .str_rep = String("test"),
-        .handle = listSd,
+        .name = String("cat"),
+        .handle = cat,
     }
 };
 
@@ -310,6 +362,7 @@ void interpretInput(String input)
 
         // parse out all arguments for aslong as there are arguments.
         char* argument = strtok(NULL, delim);
+        argc = 0;
         while(argument != NULL)
         {
             // put the arguments in order in argv
@@ -331,7 +384,7 @@ void interpretInput(String input)
         // check for command in commands list. and call it's handler.
         for(int i = 0; i < numCommands;i++)
         {
-            if(command == commands[i].str_rep)
+            if(command == commands[i].name)
             {
                 // call that command handle
                 (commands[i].handle)(argc, argv);
