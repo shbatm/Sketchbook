@@ -3,8 +3,8 @@
 #include <WiFiUdp.h>
 
 const char* host = "esplight";
-const char* ssid = "HuisVanDerTuuk";
-const char* pass = "10SamSung@H";
+const char* ssid = "pass";
+const char* pass = "pass";
 const uint16_t aport = 8266;
 
 WiFiServer TelnetServer(aport);

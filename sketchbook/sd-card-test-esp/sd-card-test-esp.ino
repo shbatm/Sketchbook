@@ -1,132 +1,84 @@
 #include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <WiFiClient.h> 
-#include <ESP8266WebServer.h>
-
 #include <ArduinoOTA.h>
-
+#include <EEPROM.h>
 #include <SPI.h>
 #include <SD.h>
 
 #include "cmd.h"
+#include "webserver.h"
+#include "settingsStore.h"
 
-const char* board_name = "3Dprinter";
-const char* ssid = "ssid";
-const char* pass = "pass";
+String board_name = "3Dprinter";
+String ssid = "ssid";
+String pass = "pass";
 
-Sd2Card card;
-SdVolume volume;
-SdFile root;
+
+int currentMode = WIFI_STA;
+
 const int chipSelect = 4;
 
 bool hasSD = false;
-File uploadFile;
-File index_html;
-String html_root = "/html/";
-String gcode_root = "/gcode/";
-const char* serverIndex = "<form method='POST' action='/upload' enctype='multipart/form-data'><input type='file' name='upload'><input type='submit' value='upload'></form>";
+ArduinoOTA ota_server(board_name.c_str(), 8266, true);
 
-ESP8266WebServer server(80);
-ArduinoOTA ota_server(board_name, 8266, true);
-
-void returnOK() {
-    server.sendHeader("Connection", "close");
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(200, "text/plain", "");
+String modeToStr(int wifimode)
+{
+    switch(wifimode)
+    {
+        case WIFI_STA:
+        return String("WIFI_STA");
+        case WIFI_AP:
+        return String("WIFI_AP");
+        case WIFI_AP_STA:
+        return String("WIFI_AP_STA");
+        default:
+        return String("no valid mode set");
+    }
 }
 
-void upload()
+void settingsStore()
 {
-    server.sendHeader("Connection", "close");
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(200, "text/html", serverIndex);
+    Serial.println("storing: ");
+    int addr = 0;
+    storeMagicStr(addr);
+    Serial.printf("board_name: %s\n", board_name.c_str());
+    storeString(board_name, addr);
+    Serial.printf("ssid: %s\n", ssid.c_str());
+    storeString(ssid, addr);
+    Serial.printf("pass: %s\n", pass.c_str());
+    storeString(pass, addr);
+    Serial.printf("wifimode: %s\n", modeToStr(currentMode).c_str());
+    storeInt(currentMode, addr);
+    storeDone();
 }
 
-void handleFileUpload()
+void settingsLoad()
 {
-    String content = "A test.";
-    Serial.println(String("uri: ") + server.uri());
-    if(server.uri() != "/upload") return;
-    HTTPUpload& upload = server.upload();
-    if(upload.status == UPLOAD_FILE_START)
+    Serial.println("loading: ");
+    int addr = 0;
+    if(magicStrPresent(addr))
     {
-        String filepath = html_root + upload.filename;
-        if(SD.exists((char *)filepath.c_str()))
-        {
-            SD.remove((char *)filepath.c_str());
-        }
-        uploadFile = SD.open(filepath.c_str(), FILE_WRITE);
-        Serial.print("Upload: START, filename: ");
-        Serial.println(filepath);
-    }
-    else if(upload.status == UPLOAD_FILE_WRITE)
-    {
-        if(uploadFile)
-        {
-            uploadFile.write(upload.buf, upload.currentSize);
-            uploadFile.flush();
-        }
-        Serial.print("Upload: WRITE, Bytes: ");
-        Serial.println(upload.currentSize);
-    }
-    else if(upload.status == UPLOAD_FILE_END)
-    {
-        if(uploadFile)
-        {
-            uploadFile.close();
-        }
-        Serial.print("Upload: END, Size: ");
-        Serial.println(upload.totalSize);
-    }
-
-    server.send(200, "text/html", content);
-}
-
-String read_from_file(File file)
-{
-    String content;
-    int data = '\0';
-    while(file.available())
-    {
-        content += (char)file.read();
-    }
-    file.close();
-    return content;
-}
-
-void handleServerRoot()
-{
-    // load index.html from SD card.
-    String content;
-    String index = html_root + "INDEX.HTM";
-    Serial.printf("loading page from: %s\n", index.c_str());
-    index_html = SD.open(index, FILE_READ);
-    if(index_html)
-    {
-        int data = '\0';
-        while(index_html.available())
-        {
-            content += (char)index_html.read();
-        }
-        index_html.close();
+        Serial.println("valid settings!");
+        board_name = loadString(addr);
+        Serial.printf("board_name: %s\n", board_name.c_str());
+        ssid = loadString(addr);
+        Serial.printf("ssid: %s\n", ssid.c_str());
+        pass = loadString(addr);
+        Serial.printf("pass: %s\n", pass.c_str());
+        currentMode = loadInt(addr);
+        Serial.printf("wifimode: %s\n", modeToStr(currentMode).c_str());
     }
     else
     {
-        content = "Content not found.";
+        Serial.println("no valid settings!");
+        settingsStore();
     }
-    server.send(200, "text/html", content);
-}
-
-void handleSDFileMan()
-{
-    server.send(200, "text/html", "<h1>Server</h1>");
 }
 
 void setupWifi()
 {
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    WiFi.begin(ssid, pass);
+    WiFi.begin(ssid.c_str(), pass.c_str());
     Serial.println("connecting");
     int breakout = 0;
     while(WiFi.status() != WL_CONNECTED)
@@ -134,29 +86,18 @@ void setupWifi()
         Serial.write('.');
         delay(500);
         breakout += 1;
-        if(breakout == 10)
+        if(breakout == 20)
         {
+            Serial.println("");
+            Serial.printf("Couldn't connect to: %s\n", ssid.c_str());
             return;
         }
     }
     Serial.println("");
-    WiFi.hostname(board_name);
+    WiFi.hostname(board_name.c_str());
     Serial.println("connected");
     Serial.print("IP: ");
     Serial.println(WiFi.localIP());
-}
-
-void setupWebServer()
-{
-    Serial.println("Setting up Server.");
-    
-    server.on("/", handleServerRoot);
-    server.on("/SDFileMan", handleSDFileMan);
-    server.on("/upload", upload);
-    server.onFileUpload(handleFileUpload);
-
-    server.begin();
-    Serial.println("HTTP Server started.");
 }
 
 void setupOTA()
@@ -179,44 +120,37 @@ void setupSD()
     }
 }
 
-void printArguments(int argc, String* argv)
+void setupNetworkServices()
 {
-    Serial.println();
-    Serial.print(String("argc: ") + argc + " arguments: ");
-    for(int i = 0; i < argc; i++)
-    {
-        Serial.print(argv[i]);
-        Serial.print(' ');
-    }
-    Serial.println();
-}
-
-void setup()
-{
-    Serial.begin(115200);
-    Serial.println("numCommands: " + String(getNumCommands()));
-    // Serial.setDebugOutput(true);
     Serial.println("setting up wifi.");
     setupWifi();
-    Serial.println("setting up SD.");
-    setupSD();
     Serial.println("setup ota.");
     setupOTA();
     Serial.println("setup http server.");
     setupWebServer();
 }
 
+void setup()
+{
+    Serial.begin(115200);
+    Serial.println("");
+    EEPROM.begin(1024);
+    settingsLoad();
+
+    Serial.println("setting up SD.");
+    setupSD();
+
+    setupNetworkServices();
+}
+
 void loop()
 {
-    if(WiFi.status() != WL_CONNECTED)
-    {
-        setup();
-    }
-    
+
     // get new input and interpret it.
     interpretInput(getInput());
-
+    // handle ota for firmware upload
     ota_server.handle();
-    server.handleClient();
+    // handle server.
+    handleServerClient();
     yield();
 }

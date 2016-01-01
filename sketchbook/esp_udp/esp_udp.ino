@@ -17,8 +17,8 @@
 
  */
  
-char ssid[] = "www.tkkrlab.nl"; //  your network SSID (name)
-char pass[] = "hax4or2the2paxor3";    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "ssid"; //  your network SSID (name)
+char pass[] = "pass";    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
 unsigned int localPort = 6454;      // local port to listen on

@@ -1,6 +1,6 @@
 #include "cmd.h"
 
-command_t commands[] = 
+static command_t commands[] = 
 {
     {
         .name = String("list"),
@@ -9,10 +9,22 @@ command_t commands[] =
     {
         .name = String("cat"),
         .handle = cat,
+    },
+    {
+        .name = String("set"),
+        .handle = set,
+    },
+    {
+        .name = String("sta"),
+        .handle = setSTA,
+    },
+    {
+        .name = String("restart"),
+        .handle = restart,
     }
 };
 
-int numCommands = sizeof(commands) / sizeof(command_t);
+static int numCommands = sizeof(commands) / sizeof(command_t);
 
 int getNumCommands()
 {
@@ -22,6 +34,18 @@ int getNumCommands()
 void setNumCommands(int amount)
 {
     numCommands = amount;
+}
+
+void printArguments(int argc, String* argv)
+{
+    Serial.println();
+    Serial.print(String("argc: ") + argc + " arguments: ");
+    for(int i = 0; i < argc; i++)
+    {
+        Serial.print(argv[i]);
+        Serial.print(' ');
+    }
+    Serial.println();
 }
 
 // returns input that is newline terminated.
@@ -86,8 +110,9 @@ void interpretInput(String input)
             len = strlen(str_input);
         }
 
-        // strtok makes inter command/argument whitespaces appear and thus
-        // no need to check for that.
+        // strtok merges adjecent delimeters (white space in this case)
+        // that is good for us it means that it doesn't matter
+        // how many white space we add between arguments.
         
         // first token is the actuall command.
         String command = String(strtok(str_input, delim));
@@ -99,8 +124,8 @@ void interpretInput(String input)
         String argv[max_args];
 
         // parse out all arguments for aslong as there are arguments.
-        char* argument = strtok(NULL, delim);
         argc = 0;
+        char* argument = strtok(NULL, delim);
         while(argument != NULL)
         {
             // put the arguments in order in argv
@@ -225,6 +250,36 @@ void listSd(int argc, String* argv)
     }
 }
 
+void writeFile(int argc, String* argv)
+{
+
+}
+
+void print3d(int argc, String* argv)
+{
+
+}
+
+void mkdir(int argc, String* argv)
+{
+
+}
+
+void rmdir(int argc, String* argv)
+{
+
+}
+
+void mv(int argc, String* argv)
+{
+
+}
+
+void touch(int argc, String* argv)
+{
+
+}
+
 void cat(int argc, String* argv)
 {
     File file;
@@ -250,5 +305,59 @@ void cat(int argc, String* argv)
             // close file after reading.
             file.close();
         }
+    }
+}
+
+// we need acces to the extern function setupWifi.
+extern void setupNetworkServices();
+extern void settingsStore();
+extern String ssid;
+extern String pass;
+extern String board_name;
+void setSTA(int argc, String* argv)
+{
+    if(argc >= 2 && argc < 4)
+    {
+        ssid = argv[0];
+        pass = argv[1];
+        // option boardname is set.
+        if(argc == 3)
+        {
+            board_name = argv[2];
+        }
+        // store settings.
+        settingsStore();
+        // restart network services
+        setupNetworkServices();
+    }
+    else
+    {
+        Serial.println("usage: sta ssid pass <boardname>");
+    }
+}
+
+void restart(int argc, String* argv)
+{
+
+    if(argc == 1)
+    {
+        int wait = argv[0].toInt();
+        delay(wait);
+        ESP.restart();
+    }
+    else
+    {
+        ESP.restart();
+    }
+}
+
+void set(int argc, String* argv)
+{
+    if(argc == 2)
+    {
+    }
+    else
+    {
+        Serial.println("Usage: set thing tovalue.");
     }
 }

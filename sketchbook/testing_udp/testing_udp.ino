@@ -1,8 +1,8 @@
 #include "ESP8266WiFi.h"
 #include "WiFiUdp.h"
 
-char ssid[] = "www.tkkrlab.nl";
-char pass[] = "hax4or2the2paxor3";
+char ssid[] = "pass";
+char pass[] = "pass";
 
 #define ARTNETPORT 6454
 

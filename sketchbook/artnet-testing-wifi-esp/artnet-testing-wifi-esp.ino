@@ -14,8 +14,8 @@ Artnet artnet;
 // Change ip and mac address for your setup
 uint8_t ip[] = {192, 168, 2, 2};
 uint8_t mac[] = {0x04, 0xE9, 0xE5, 0x00, 0x69, 0xEC};
-char ssid[] = "www.tkkrlab.nl"; //  your network SSID (name)
-char pass[] = "hax4or2the2paxor3";    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "ssid"; //  your network SSID (name)
+char pass[] = "pass";    // your network password (use for WPA, or use as key for WEP)
 
 MDNSResponder mdns;
 

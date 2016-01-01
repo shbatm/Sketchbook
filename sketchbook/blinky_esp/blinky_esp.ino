@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-const char* ssid = "www.tkkrlab.nl";
-const char* pass = "hax4or2the2paxor3";
+const char* ssid = "ssid";
+const char* pass = "pass";
 
 WiFiUDP listener;
 
