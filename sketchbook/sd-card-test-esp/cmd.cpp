@@ -15,6 +15,10 @@ static command_t commands[] =
         .handle = rm,
     },
     {
+        .name = String("mkdir"),
+        .handle = mkdir,
+    },
+    {
         .name = String("sta"),
         .handle = setSTA,
     },
@@ -204,6 +208,7 @@ void printDirectory(File dir, int numTabs)
         }
         if(entry.isDirectory())
         {
+            Serial.print('\t');
             Serial.print(entry.name());
             Serial.println("/");
             printDirectory(entry, numTabs+1);
@@ -260,11 +265,6 @@ void print3d(int argc, String* argv)
 
 }
 
-void mkdir(int argc, String* argv)
-{
-
-}
-
 void mv(int argc, String* argv)
 {
 
@@ -272,7 +272,28 @@ void mv(int argc, String* argv)
 
 void touch(int argc, String* argv)
 {
+    File file;
+    for(int i = 0; i < argc; i++)
+    {
+        if(argv[i].endsWith("/"))
+        {
+            Serial.printf("touch: setting times of ‘%s’: No such file or directory\n", argv[i].c_str());
+            break;
+        }
+        else
+        {
+            file = SD.open(argv[i], FILE_WRITE);
+            file.close();
+        }
+    }
+}
 
+void mkdir(int argc, String* argv)
+{
+    for(int i = 0; i < argc; i++)
+    {
+        SD.mkdir((char *)argv[i].c_str());
+    }
 }
 
 void rm(int argc, String* argv)
@@ -308,21 +329,20 @@ void cat(int argc, String* argv)
             Serial.print("cat: ");
             Serial.print(argv[i]);
             Serial.print(": No such file.");
+            break;
         }
-        else if(file.isDirectory())
+        file = SD.open(argv[i]);
+        if(file.isDirectory())
         {
             Serial.println(String("cat: ") + argv[i] + ": " + "Is a Directory.");
+            break;
         }
-        else
+        while(file.available())
         {
-            file = SD.open(argv[i]);
-            while(file.available())
-            {
-                Serial.write((char)file.read());
-            }
-            // close file after reading.
-            file.close();
+            Serial.write((char)file.read());
         }
+        // close file after reading.
+        file.close();
     }
 }
 
