@@ -44,6 +44,10 @@ void mv(int, String*);
 void touch(int, String*);
 // restarts esp after X amount of secconds.
 void restart(int, String*);
+// this prints the available commands
+void print_commands(int, String*);
+// echo's everything you type back into the command prompt.
+void echo(int, String*);
 
 
 #endif

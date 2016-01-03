@@ -25,6 +25,10 @@ static command_t commands[] =
     {
         .name = String("restart"),
         .handle = restart,
+    },
+    {
+        .name = String("commands"),
+        .handle = print_commands,
     }
 };
 
@@ -268,6 +272,20 @@ void print3d(int argc, String* argv)
 void mv(int argc, String* argv)
 {
 
+}
+
+void echo(int argc, String* argv)
+{
+    
+}
+
+void print_commands(int argc, String* argv)
+{
+    Serial.println("Commands Available: ");
+    for(int i = 0; i < numCommands; i++)
+    {
+        Serial.printf("--> %s\n", commands[i].name.c_str());
+    }
 }
 
 void touch(int argc, String* argv)
