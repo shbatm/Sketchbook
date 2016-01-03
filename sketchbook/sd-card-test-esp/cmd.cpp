@@ -11,8 +11,8 @@ static command_t commands[] =
         .handle = cat,
     },
     {
-        .name = String("set"),
-        .handle = set,
+        .name = String("rm"),
+        .handle = rm,
     },
     {
         .name = String("sta"),
@@ -265,11 +265,6 @@ void mkdir(int argc, String* argv)
 
 }
 
-void rmdir(int argc, String* argv)
-{
-
-}
-
 void mv(int argc, String* argv)
 {
 
@@ -278,6 +273,29 @@ void mv(int argc, String* argv)
 void touch(int argc, String* argv)
 {
 
+}
+
+void rm(int argc, String* argv)
+{
+    for(int i = 0; i < argc; i++)
+    {
+        String object = argv[i];
+        if(SD.exists((char *)object.c_str()))
+        {
+            if(object.endsWith("/"))
+            {
+                SD.rmdir((char *)object.c_str());
+            }
+            else
+            {
+                SD.remove((char *)object.c_str());
+            }
+        }
+        else
+        {
+            Serial.printf("rm: cannot remove %s: No such file or Directory", object.c_str());
+        }
+    }
 }
 
 void cat(int argc, String* argv)
@@ -348,16 +366,5 @@ void restart(int argc, String* argv)
     else
     {
         ESP.restart();
-    }
-}
-
-void set(int argc, String* argv)
-{
-    if(argc == 2)
-    {
-    }
-    else
-    {
-        Serial.println("Usage: set thing tovalue.");
     }
 }

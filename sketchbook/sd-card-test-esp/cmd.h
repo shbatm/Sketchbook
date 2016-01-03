@@ -36,8 +36,8 @@ void print3d(int, String*);
 void cat(int, String*);
 // make a directory on the sd card.
 void mkdir(int, String*);
-// remove a directory on the sd card.
-void rmdir(int, String*);
+// remove a directory or a file on the sd card.
+void rm(int, String*);
 // move a directory/file on the sd card.
 void mv(int, String*);
 // create a file or directory on the sd card.

@@ -18,25 +18,27 @@ int currentMode = WIFI_STA;
 const int chipSelect = 4;
 
 bool hasSD = false;
-ArduinoOTA ota_server(board_name.c_str(), 8266, true);
+
+ArduinoOTA ota_server;
 
 String modeToStr(int wifimode)
 {
     switch(wifimode)
     {
         case WIFI_STA:
-        return String("WIFI_STA");
+            return String("WIFI_STA");
         case WIFI_AP:
-        return String("WIFI_AP");
+            return String("WIFI_AP");
         case WIFI_AP_STA:
-        return String("WIFI_AP_STA");
+            return String("WIFI_AP_STA");
         default:
-        return String("no valid mode set");
+            return String("no valid mode set");
     }
 }
 
 void settingsStore()
 {
+    Serial.println();
     Serial.println("storing: ");
     int addr = 0;
     storeMagicStr(addr);
@@ -49,10 +51,12 @@ void settingsStore()
     Serial.printf("wifimode: %s\n", modeToStr(currentMode).c_str());
     storeInt(currentMode, addr);
     storeDone();
+    Serial.println();
 }
 
 void settingsLoad()
 {
+    Serial.println();
     Serial.println("loading: ");
     int addr = 0;
     if(magicStrPresent(addr))
@@ -66,11 +70,13 @@ void settingsLoad()
         Serial.printf("pass: %s\n", pass.c_str());
         currentMode = loadInt(addr);
         Serial.printf("wifimode: %s\n", modeToStr(currentMode).c_str());
+        Serial.println();
     }
     else
     {
         Serial.println("no valid settings!");
         settingsStore();
+        Serial.println();
     }
 }
 
