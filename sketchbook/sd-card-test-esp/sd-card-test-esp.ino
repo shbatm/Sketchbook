@@ -1,4 +1,6 @@
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <EEPROM.h>
 #include <SPI.h>
@@ -12,14 +14,12 @@ String board_name = "3Dprinter";
 String ssid = "ssid";
 String pass = "pass";
 
-
 int currentMode = WIFI_STA;
 
+#define ota ArduinoOTA
+
 const int chipSelect = 4;
-
 bool hasSD = false;
-
-ArduinoOTA ota_server;
 
 String modeToStr(int wifimode)
 {
@@ -108,7 +108,31 @@ void setupWifi()
 
 void setupOTA()
 {
-    ota_server.setup();
+    ota.onStart([]()
+    {
+        Serial.println("Start");
+    });
+
+    ota.onEnd([]()
+    {
+        Serial.println("\nEnd");
+    });
+
+    ota.onProgress([](unsigned int progress, unsigned int total)
+    {
+        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    });
+
+    ota.onError([](ota_error_t error)
+    {
+        Serial.printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+        else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+    ota.begin();
 }
 
 void setupSD()
@@ -155,7 +179,7 @@ void loop()
     // get new input and interpret it.
     interpretInput(getInput());
     // handle ota for firmware upload
-    ota_server.handle();
+    ota.handle();
     // handle server.
     handleServerClient();
     yield();
