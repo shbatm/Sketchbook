@@ -1,0 +1,26 @@
+
+#promptoutput textarea {
+    display: block;
+    position: absolute;
+    width: 98%;
+    height: 96%;
+    resize: none;
+    border: solid;
+    border-color: gray;
+}
+#promptinput {
+    display: block;
+    position: absolute;
+    height: 20px;
+    width: 100%;
+    bottom: 0px;
+}
+#inputfield{
+    position: absolute;
+    width: calc(100% - 60px);
+}
+#sendbutton{
+    position: absolute;
+    width: 60px;
+    right: 0px;
+}

@@ -1,0 +1,336 @@
+
+
+#printcontrol button{
+    padding: 0;
+    float: left;
+}
+
+#devicecontrol button{
+    padding: 0;
+    float: left;
+}
+
+#control{
+    display: block;
+    position: absolute;
+    border-size: 3px;
+    border-color: black;
+    top: 5%;
+    height: 300;
+    width: 300;
+}
+
+.circle 
+{
+    display: flex;
+    position: absolute;
+    /*flex-direction: column;*/
+    /*justify-content: center;*/
+    width: 50px;
+    height: 50px;
+    top: 10%;
+    left: 0;
+    border-radius: 50%;
+    background: #D0F000;
+    opacity: 0.5;
+    text-align: center;
+    color: white;
+}
+
+p {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#homex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    left: 0px;
+    top: 0px;
+    /*top: calc(50% - 25px);*/
+    /*left: calc(50% - 25px);*/
+    border-radius: 50%;
+    background: #D0F000;
+    text-align: center;
+    color: white;
+}
+
+#homey {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    right: 0px;
+    bottom: 0px;
+    border-radius: 50%;
+    background: blue;
+    text-align: center;
+    color: white;
+}
+
+#homez {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    top: 0px;
+    right: 0px;
+    border-radius: 50%;
+    background: green;
+    text-align: center;
+    color: white;
+}
+
+#center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: calc(50% - 15px);
+    left: calc(50% - 15px);
+    border-radius: 50%;
+    background: red;
+    text-align: center;
+    color: white;
+}
+
+
+#r {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: calc(50% - 15px);
+    right: calc(40% - 15px);
+    background-color: #bfbfbf;
+    text-align: center;
+    color: white;
+}
+
+#rr {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 60px;
+    top: calc(50% - 30px);
+    right: calc(30% - 15px);
+    background-color: #999999;
+    text-align: center;
+    color: white;
+}
+
+#rrr {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 120px;
+    top: calc(50% - 60px);
+    right: calc(20% - 15px);
+    background-color: #666666;
+    text-align: center;
+    color: white;
+}
+
+#rrrr {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 180px;
+    top: calc(50% - 90px);
+    right: calc(10% - 15px);
+    background-color: #4d4d4d;
+    text-align: center;
+    color: white;
+}
+
+
+#l {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: calc(50% - 15px);
+    left: calc(40% - 15px);
+    background-color: #bfbfbf;
+    text-align: center;
+    color: white;
+}
+
+#ll {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 60px;
+    top: calc(50% - 30px);
+    left: calc(30% - 15px);
+    background-color: #999999;
+    text-align: center;
+    color: white;
+}
+
+#lll {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 120px;
+    top: calc(50% - 60px);
+    left: calc(20% - 15px);
+    background-color: #666666;
+    text-align: center;
+    color: white;
+}
+
+#llll {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 180px;
+    top: calc(50% - 90px);
+    left: calc(10% - 15px);
+    background-color: #4d4d4d;
+    text-align: center;
+    color: white;
+}
+
+#b {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    bottom: calc(40% - 15px);
+    right: calc(50% - 15px);
+    background-color: #bfbfbf;
+    text-align: center;
+    color: white;
+}
+
+#bb {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 60px;
+    height: 30px;
+    bottom: calc(30% - 15px);
+    right: calc(50% - 30px);
+    background-color: #999999;
+    text-align: center;
+    color: white;
+}
+
+#bbb {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 120px;
+    height: 30px;
+    bottom: calc(20% - 15px);
+    right: calc(50% - 60px);
+    background-color: #666666;
+    text-align: center;
+    color: white;
+}
+
+#bbbb {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 180px;
+    height: 30px;
+    bottom: calc(10% - 15px);
+    right: calc(50% - 90px);
+    background-color: #4d4d4d;
+    text-align: center;
+    color: white;
+}
+
+
+#t {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: calc(40% - 15px);
+    right: calc(50% - 15px);
+    background-color: #bfbfbf;
+    text-align: center;
+    color: white;
+}
+
+#tt {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 60px;
+    height: 30px;
+    top: calc(30% - 15px);
+    right: calc(50% - 30px);
+    background-color: #999999;
+    text-align: center;
+    color: white;
+}
+
+#ttt {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 120px;
+    height: 30px;
+    top: calc(20% - 15px);
+    right: calc(50% - 60px);
+    background-color: #666666;
+    text-align: center;
+    color: white;
+}
+
+#tttt {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    width: 180px;
+    height: 30px;
+    top: calc(10% - 15px);
+    right: calc(50% - 90px);
+    background-color: #4d4d4d;
+    text-align: center;
+    color: white;
+}

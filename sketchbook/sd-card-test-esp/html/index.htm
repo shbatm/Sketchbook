@@ -4,112 +4,126 @@
             Printer Interface
         </title>
         <script type='text/javascript' src='/home/robert/jquery-1.4.2.min.js'></script>
+        <script type="text/javascript" src="control.js"></script>
+        <link href="roughlayout.css" rel="stylesheet" type="text/css">
+        <link href="prompt.css" rel="stylesheet" type="text/css">
+        <link href="control.css" rel="stylesheet" type="text/css">
     </head>
     <style type="text/css">
-        body, html {
-            height: 90%;
-            width: 90%;
-        }
-        #window {
-            display: block;
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            width: 100%;
-            height: 100%;
-            /*background: blue;*/
-        }
-        #controlpanel {
-            display: block;
-            position: absolute;
-            float: left;
-            left: 0%;
-            width: 30%;
-            height: 100%;
-            /*background: black;*/
-        }
-        #prompt {
-            display: block;
-            position: absolute;
-            float: right;
-            right: 0%;
-            width: 30%;
-            height: 100%;
-            /*background: green;*/
-        }
-        #promptoutput textarea {
-            display: block;
-            position: absolute;
-            width: 98%;
-            height: 96%;
-            resize: none;
-            border: solid;
-            border-color: gray;
-        }
-        #promptinput {
-            display: block;
-            position: absolute;
-            height: 20px;
-            width: 100%;
-            bottom: 0px;
-        }
-        #inputfield{
-            position: absolute;
-            width: calc(100% - 60px);
-        }
-        #sendbutton{
-            position: absolute;
-            width: 60px;
-            right: 0px;
-        }
-
-        #control{
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
     </style>
-    <script type="text/javascript">
-        var myVar = setInterval(promptupdate, 1000);
-
-        function promptupdate() {
-            var outputarea = document.getElementById("outputarea");
-            var text = "HI!\nthing";
-            
-            outputarea.value = text;
-            outputarea.scrollTop = outputarea.scrollHeight;
-        }
-
-        function DocumentReady()
-        {
-            promptupdate();
-        }
-        
-        $(document).ready(DocumentReady);
-    </script>
     <body>
         <div id='window'>
             <div id='controlpanel'>
-                <table>
+                <div id='printcontrol'>
                     <button type="button" name="loadfile">Load File</button>
                     <button type="button" name="print">Print</button>
                     <button type="button" name="pause">Pause</button>
                     <button type="button" name="stop">Stop</button>
+                </div>
+                <div id='devicecontrol'>
                     <button type="button" name="turnoff">Turn-off</button>
-                </table>
-                <table>
                     <button type="button" name="motorsoff">Motorsoff</button>
-                </table>
-                <table>
-                    <div id='controlimages'>
-                        <div id='control'>
-                            <!-- <svg src='images/test/homeX.svg'> -->
-                            <!-- <svg src='images/test/homeZ.svg'> -->
-                            <object data="images/test/homeX.svg" type="image/svg+xml"></object>
-                            <object data="images/test/homeZ.svg" type="image/svg+xml"></object>
+                </div>
+                <div id='control'>
+                    <a href='index.htm'>
+                        <div id='homex'>
+                            <p>Home X</p>
                         </div>
+                    </a>
+                    <a href='index.htm'>
+                        <div id='homey'>
+                            <p>Home Y</p>
+                        </div>
+                    </a>
+                    <a href='index.htm'>
+                        <div id='homez'>
+                            <p>Home Z</p>
+                        </div>
+                    </a>
+                    <div id='center'>
                     </div>
-                </table>
+
+                    <a href='index.htm'>
+                    <div id='r'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='rr'>
+                    </div>
+                    </a>
+                    
+                    <a href='index.htm'>
+                    <div id='rrr'>
+                    </div>
+                    </a>
+                    
+                    <a href='index.htm'>
+                    <div id='rrrr'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='l'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='ll'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='lll'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='llll'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='b'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='bb'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='bbb'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='bbbb'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='t'>
+                    </div>
+                    </a>
+
+                    <a href='index.htm'>
+                    <div id='tt'>
+                    </div>
+                    </a>
+                    
+                    <a href='index.htm'>
+                    <div id='ttt'>
+                    </div>
+                    </a>
+                    
+                    <a href='index.htm'>
+                    <div id='tttt'>
+                    </div>
+                    </a>
+
+                </div>
             </div>
             <div id='prompt'>
                 <table>
