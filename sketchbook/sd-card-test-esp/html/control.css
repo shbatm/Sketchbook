@@ -13,9 +13,7 @@
 #control{
     display: block;
     position: absolute;
-    border-size: 3px;
-    border-color: black;
-    top: 5%;
+    top: 50px;
     height: 300;
     width: 300;
 }

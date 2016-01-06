@@ -13,7 +13,7 @@ body, html {
 }
 #controlpanel {
     display: block;
-    position: absolute;
+    position: fixed;
     left: 0%;
     width: 30%;
     height: 100%;
