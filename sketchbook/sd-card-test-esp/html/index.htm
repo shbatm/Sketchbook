@@ -3,7 +3,8 @@
         <title>
             Printer Interface
         </title>
-        <script type='text/javascript' src='/home/robert/jquery-1.4.2.min.js'></script>
+        <meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1"> 
+        <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
         <script type="text/javascript" src="control.js"></script>
         <link href="roughlayout.css" rel="stylesheet" type="text/css">
         <link href="prompt.css" rel="stylesheet" type="text/css">
@@ -12,147 +13,144 @@
     <style type="text/css">
     </style>
     <body>
-        <div id='window'>
-            <div id='controlpanel'>
-                <div id='printcontrol'>
-                    <button type="button" name="loadfile">Load File</button>
-                    <button type="button" name="print">Print</button>
-                    <button type="button" name="pause">Pause</button>
-                    <button type="button" name="stop">Stop</button>
+        <div id="window">
+            <div id="controlpanel">
+                <div id="printcontrol">
+                    <button type="button" id="loadfile">Load File</button>
+                    <button type="button" id="print">Print</button>
+                    <button type="button" id="pause">Pause</button>
+                    <button type="button" id="stop">Stop</button>
                 </div>
-                <div id='devicecontrol'>
-                    <button type="button" name="turnoff">Turn-off</button>
-                    <button type="button" name="motorsoff">Motorsoff</button>
+                <div id="devicecontrol">
+                    <button type="button" id="turnoff">Turn-off</button>
+                    <button type="button" id="motorsoff">Motorsoff</button>
                 </div>
-                <div id='control'>
-                    <a href='index.htm'>
-                        <div id='homex'>
-                            <!-- <p>Home X</p> -->
+                <div id="control">
+                    <a id="link-homex">
+                        <div id="homex">
                             <img src="images/icons/homex.svg">
                         </div>
                     </a>
-                    <a href='index.htm'>
-                        <div id='homey'>
-                            <!-- <p>Home Y</p> -->
+                    <a id="link-homey">
+                        <div id="homey">
                             <img src="images/icons/homey.svg">
                         </div>
                     </a>
-                    <a href='index.htm'>
-                        <div id='homez'>
-                            <!-- <p>Home Z</p> -->
+                    <a id="link-homez">
+                        <div id="homez">
                             <img src="images/icons/homez.svg">
                         </div>
                     </a>
-                    <div id='center'>
+                    <div id="center">
                         <img src="images/icons/midpointxy.svg">
                     </div>
 
-                    <a href='index.htm'>
-                    <div id='r'>
-                    <img src="images/icons/stepup01x.svg">
+                    <a>
+                    <div id="r">
+                    <img src="images/icons/stepup01x.svg" width="34" height="51">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='rr'>
-                    <img src="images/icons/stepup1x.svg">
+                    <a>
+                    <div id="rr">
+                    <img src="images/icons/stepup1x.svg" width="33" height="85">
                     </div>
                     </a>
                     
-                    <a href='index.htm'>
-                    <div id='rrr'>
-                    <img src="images/icons/stepup10x.svg">
+                    <a>
+                    <div id="rrr">
+                    <img src="images/icons/stepup10x.svg" width="40" height="120">
                     </div>
                     </a>
                     
-                    <a href='index.htm'>
-                    <div id='rrrr'>
-                    <img src="images/icons/stepup100x.svg">
+                    <a>
+                    <div id="rrrr">
+                    <img src="images/icons/stepup100x.svg" width="45" height="152">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='l'>
-                    <img src="images/icons/stepdown01x.svg">
+                    <a>
+                    <div id="l">
+                    <img src="images/icons/stepdown01x.svg" width="34" height="51">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='ll'>
-                    <img src="images/icons/stepdown1x.svg">
+                    <a>
+                    <div id="ll">
+                    <img src="images/icons/stepdown1x.svg" width="33" height="85">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='lll'>
-                    <img src="images/icons/stepdown10x.svg">
+                    <a>
+                    <div id="lll">
+                    <img src="images/icons/stepdown10x.svg" width="40" height="120">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='llll'>
-                    <img src="images/icons/stepdown100x.svg">
+                    <a>
+                    <div id="llll">
+                    <img src="images/icons/stepdown100x.svg" width="45" height="152">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='b'>
-                    <img src="images/icons/stepdown01y.svg">
+                    <a>
+                    <div id="b">
+                    <img src="images/icons/stepdown01y.svg" width="51" height="34">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='bb'>
-                    <img src="images/icons/stepdown1y.svg">
+                    <a>
+                    <div id="bb">
+                    <img src="images/icons/stepdown1y.svg" width="85" height="33">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='bbb'>
-                    <img src="images/icons/stepdown10y.svg">
+                    <a>
+                    <div id="bbb">
+                    <img src="images/icons/stepdown10y.svg" width="120" height="40">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='bbbb'>
-                    <img src="images/icons/stepdown100y.svg">
+                    <a>
+                    <div id="bbbb">
+                    <img src="images/icons/stepdown100y.svg" width="152" height="45">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='t'>
-                    <img src="images/icons/stepup01y.svg">
+                    <a>
+                    <div id="t">
+                    <img src="images/icons/stepup01y.svg" width="51" height="34">
                     </div>
                     </a>
 
-                    <a href='index.htm'>
-                    <div id='tt'>
-                    <img src="images/icons/stepup1y.svg">
+                    <a>
+                    <div id="tt">
+                    <img src="images/icons/stepup1y.svg" width="85" height="33">
                     </div>
                     </a>
                     
-                    <a href='index.htm'>
-                    <div id='ttt'>
-                    <img src="images/icons/stepup10y.svg">
+                    <a>
+                    <div id="ttt">
+                    <img src="images/icons/stepup10y.svg" width="120" height="40">
                     </div>
                     </a>
                     
-                    <a href='index.htm'>
-                    <div id='tttt'>
-                    <img src="images/icons/stepup100y.svg">
+                    <a>
+                    <div id="tttt">
+                    <img src="images/icons/stepup100y.svg" width="152" height="45">
                     </div>
                     </a>
 
                 </div>
             </div>
-            <div id='prompt'>
+            <div id="prompt">
                 <table>
-                    <div id='promptoutput'>
-                        <textarea id='outputarea' readonly></textarea>
+                    <div id="promptoutput">
+                        <textarea id="outputarea" readonly></textarea>
                     </div>
-                    <div id='promptinput'>
-                        <input id='inputfield'>
-                        <button type="button" id='sendbutton' name="promptsend">Send</button>
+                    <div id="promptinput">
+                        <input id="inputfield">
+                        <button type="button" id="sendbutton" name="promptsend">Send</button>
                     </div>
                 </table>
             </div>

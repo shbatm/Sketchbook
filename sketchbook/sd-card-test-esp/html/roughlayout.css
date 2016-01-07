@@ -1,6 +1,8 @@
 body, html {
     height: 90%;
     width: 90%;
+    background-color: gray;
+    opacity: 50%;
 }
 #window {
     display: block;

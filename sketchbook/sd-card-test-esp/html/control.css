@@ -14,8 +14,8 @@
     display: block;
     position: absolute;
     top: 50px;
-    height: 280;
-    width: 280;
+    width: 249;
+    height: 235;
 }
 
 .circle 
@@ -47,288 +47,232 @@ p {
 #homex {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     position: absolute;
-    width: 50px;
-    height: 50px;
     left: 0px;
     top: 0px;
-    /*top: calc(50% - 25px);*/
-    /*left: calc(50% - 25px);*/
-    border-radius: 50%;
-    background: #D0F000;
-    text-align: center;
-    color: white;
 }
 
 #homey {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     position: absolute;
-    width: 50px;
-    height: 50px;
     right: 0px;
     bottom: 0px;
-    border-radius: 50%;
-    background: blue;
-    text-align: center;
-    color: white;
 }
 
 #homez {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     position: absolute;
-    width: 50px;
-    height: 50px;
     top: 0px;
     right: 0px;
-    border-radius: 50%;
-    background: green;
-    text-align: center;
-    color: white;
 }
 
 #center {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 30px;
-    top: calc(50% - 15px);
-    left: calc(50% - 15px);
-    border-radius: 50%;
-    background: red;
-    text-align: center;
-    color: white;
+    width: 46px;
+    height: 46px;
+    top: calc(50% - 23px);
+    left: calc(50% - 23px);
+
+    z-index: 5;
 }
 
 
 #r {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 30px;
-    top: calc(50% - 15px);
+    width: 34px;
+    height: 51px;
+    top: calc(50% - 25.5px);
     right: calc(40% - 15px);
-    background-color: #bfbfbf;
-    text-align: center;
-    color: white;
+    z-index: 4;
 }
 
 #rr {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 60px;
-    top: calc(50% - 30px);
+    width: 33px;
+    height: 85px;
+    top: calc(50% - 42.5px);
     right: calc(30% - 15px);
-    background-color: #999999;
-    text-align: center;
-    color: white;
+    z-index: 3;
 }
 
 #rrr {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
+    width: 40px;
     height: 120px;
     top: calc(50% - 60px);
     right: calc(20% - 15px);
-    background-color: #666666;
-    text-align: center;
-    color: white;
+    z-index: 2;
 }
 
 #rrrr {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 180px;
-    top: calc(50% - 90px);
-    right: calc(10% - 15px);
-    background-color: #4d4d4d;
-    text-align: center;
-    color: white;
+    width: 45px;
+    height: 152px;
+    top: calc(50% - 76px);
+    right: calc(10% - 13px);
+    z-index: 1;
 }
 
 
 #l {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 30px;
-    top: calc(50% - 15px);
+    width: 34px;
+    height: 51px;
+    top: calc(50% - 25.5px);
     left: calc(40% - 15px);
-    background-color: #bfbfbf;
-    text-align: center;
-    color: white;
+    z-index: 4;
 }
 
 #ll {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 60px;
-    top: calc(50% - 30px);
+    width: 33px;
+    height: 85px;
+    top: calc(50% - 42.5px);
     left: calc(30% - 15px);
-    background-color: #999999;
-    text-align: center;
-    color: white;
+    z-index: 3;
 }
 
 #lll {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
+    width: 40px;
     height: 120px;
     top: calc(50% - 60px);
     left: calc(20% - 15px);
-    background-color: #666666;
-    text-align: center;
-    color: white;
+    z-index: 2;
 }
 
 #llll {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 180px;
-    top: calc(50% - 90px);
-    left: calc(10% - 15px);
-    background-color: #4d4d4d;
-    text-align: center;
-    color: white;
+    width: 45px;
+    height: 152px;
+    top: calc(50% - 76px);
+    left: calc(10% - 13px);
+    z-index: 1;
 }
+
 
 #b {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 51px;
+    height: 34px;
     bottom: calc(40% - 15px);
-    right: calc(50% - 15px);
-    background-color: #bfbfbf;
-    text-align: center;
-    color: white;
+    right: calc(50% - 25.5px);
+    z-index: 4;
 }
 
 #bb {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 60px;
-    height: 30px;
+    width: 85px;
+    height: 33px;
     bottom: calc(30% - 15px);
-    right: calc(50% - 30px);
-    background-color: #999999;
-    text-align: center;
-    color: white;
+    right: calc(50% - 42.5px);
+    z-index: 3;
 }
 
 #bbb {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
     width: 120px;
-    height: 30px;
+    height: 40px;
     bottom: calc(20% - 15px);
     right: calc(50% - 60px);
-    background-color: #666666;
-    text-align: center;
-    color: white;
+    z-index: 2;
 }
 
 #bbbb {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 180px;
-    height: 30px;
+    width: 152;
+    height: 45;
     bottom: calc(10% - 15px);
-    right: calc(50% - 90px);
-    background-color: #4d4d4d;
-    text-align: center;
-    color: white;
+    right: calc(50% - 76px);
+    z-index: 1;
 }
 
 
 #t {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 51px;
+    height: 34px;
     top: calc(40% - 15px);
-    right: calc(50% - 15px);
-    background-color: #bfbfbf;
-    text-align: center;
-    color: white;
+    right: calc(50% - 25.5px);
+    z-index: 4;
 }
 
 #tt {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 60px;
-    height: 30px;
+    width: 85px;
+    height: 33px;
     top: calc(30% - 15px);
-    right: calc(50% - 30px);
-    background-color: #999999;
-    text-align: center;
-    color: white;
+    right: calc(50% - 42.5px);
+    z-index: 3;
 }
 
 #ttt {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
     width: 120px;
-    height: 30px;
+    height: 40px;
     top: calc(20% - 15px);
     right: calc(50% - 60px);
-    background-color: #666666;
-    text-align: center;
-    color: white;
+    z-index: 2;
 }
 
 #tttt {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
     position: absolute;
-    width: 180px;
-    height: 30px;
+    width: 152;
+    height: 45;
     top: calc(10% - 15px);
-    right: calc(50% - 90px);
-    background-color: #4d4d4d;
-    text-align: center;
-    color: white;
+    right: calc(50% - 76px);
+    z-index: 1;
 }
