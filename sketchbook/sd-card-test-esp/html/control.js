@@ -1,18 +1,23 @@
 // var myVar = setInterval(promptupdate, 1000);
 
+// returns image data.
 var getImageData = function(imgtag, x, y)
 {
     var imgsrc = imgtag.src;
     
+    // create a canvas to hold the image and pick a pixel out of.
     var canvas = document.createElement("canvas");
     canvas.width = imgtag.width;
     canvas.height = imgtag.height;
     
     var context = canvas.getContext('2d')
+    // draw the image.
     context.drawImage(imgtag, 0, 0);
+    // get the pixel at x, y and only 1 single pixel.
     return context.getImageData(x, y, 1, 1);
 }
 
+// return the offseted click position.
 function getClickPosition(e, element) {
     var parentPosition = getPosition(element);
     var xPosition = e.clientX - parentPosition.x;
@@ -20,7 +25,9 @@ function getClickPosition(e, element) {
 
     return {x: xPosition, y: yPosition};
 }
- 
+
+// returns the position of the element.
+// takes in acount the nesting of the element.
 function getPosition(element) {
     var xPosition = 0;
     var yPosition = 0;
@@ -33,6 +40,7 @@ function getPosition(element) {
     return { x: xPosition, y: yPosition };
 }
 
+// returns if mouse is over a pixel that is transparent.
 var isTransparentUnderMouse = function (event, element) {
     var imgtag = element.getElementsByTagName("img")[0];
     // console.log(element.getElementsByTagName("img"));
@@ -52,6 +60,7 @@ var isTransparentUnderMouse = function (event, element) {
     return true;
 };
 
+// function that creates event handlers.
 function onControlClick()
 {
     var action_ids = [
