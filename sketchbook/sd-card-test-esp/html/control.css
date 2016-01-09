@@ -68,6 +68,14 @@ p {
     right: 0px;
 }
 
+#home {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
 #center {
     display: flex;
     flex-direction: column;

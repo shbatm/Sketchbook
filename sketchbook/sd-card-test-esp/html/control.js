@@ -75,6 +75,7 @@ function onControlClick()
         document.getElementById("homex"),
         document.getElementById("homey"),
         document.getElementById("homez"),
+        document.getElementById("home"),
         document.getElementById("r"),
         document.getElementById("rr"),
         document.getElementById("rrr"),
@@ -116,6 +117,21 @@ function onControlClick()
                     return false;
             }
             // future send the actual commands to /action?this.name=1
+            
+            var xhr = new XMLHttpRequest();
+            var command = "command=" + this.named;
+            xhr.open('POST',
+                     encodeURI("/action?" + command));
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function()
+            {
+                if(xhr.status !== 200)
+                {
+                    console.log("something went wrong http:200");
+                }
+            };
+            xhr.send(encodeURI(command));
+            console.log("command: ", command)
             console.log(this.named);
             return false;
         }
