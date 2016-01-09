@@ -1,5 +1,67 @@
 // var myVar = setInterval(promptupdate, 1000);
 
+var getImageData = function(imgtag, x, y)
+{
+    var imgsrc = imgtag.src;
+    console.log(imgtag);
+    
+    var canvas = document.createElement("canvas");
+    canvas.width = imgtag.width;
+    canvas.height = imgtag.height;
+    console.log("canvas: ", canvas);
+    
+    var context = canvas.getContext('2d')
+    console.log("context: ", context);
+    context.drawImage(imgtag, 0, 0);
+    return context.getImageData(x, y, 1, 1);
+}
+
+function getClickPosition(e, element) {
+    var parentPosition = getPosition(element);
+    var xPosition = e.clientX - parentPosition.x;
+    var yPosition = e.clientY - parentPosition.y;
+
+    return {x: xPosition, y: yPosition};
+}
+ 
+function getPosition(element) {
+    var xPosition = 0;
+    var yPosition = 0;
+      
+    while (element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+    return { x: xPosition, y: yPosition };
+}
+
+var isTransparentUnderMouse = function (event, element) {
+    var imgtag = element.getElementsByTagName("img")[0];
+    // console.log(element.getElementsByTagName("img"));
+    // console.log(imgtag, imgtag.src, imgtag.width, imgtag.height);
+
+    var pos = getClickPosition(event, element);
+    var mx = pos.x;
+    var my = pos.y;
+    // console.log("pos: ", mx, my);
+
+    pixel_data = getImageData(imgtag, mx, my);
+
+    console.log(pixel_data);
+    console.log(pixel_data.data);
+
+    // pixel_data = getImageData(imgtag, 5, 5);
+
+    // console.log(pixel_data);
+    // console.log(pixel_data.data);
+    // console.log(pixel_data.data.byteLength)
+    // console.log(pixel_data.data.length);
+    if(pixel_data.data[3])
+        return false;
+    return true;
+};
+
 function onControlClick()
 {
     var action_ids = [
@@ -12,9 +74,8 @@ function onControlClick()
         document.getElementById("motorsoff"),
         // machine actions.
         document.getElementById("link-homex"),
-        document.getElementById("homey"),
-        document.getElementById("homez"),
-        document.getElementById("homex"),
+        document.getElementById("link-homey"),
+        document.getElementById("link-homez"),
         document.getElementById("r"),
         document.getElementById("rr"),
         document.getElementById("rrr"),
@@ -43,8 +104,11 @@ function onControlClick()
         // and sends back what element what clicked as to take the appropriate
         // action.
         element_id.named = element_id_name;
-        element_id.onclick = function()
+        element_id.element = element_id
+        element_id.onclick = function(e)
         {
+            if (isTransparentUnderMouse(e, this.element))
+                return false;
             // future send the actual commands to /action?this.name=1
             console.log(this.named);
             return false;

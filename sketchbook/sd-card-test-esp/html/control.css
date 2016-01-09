@@ -13,6 +13,7 @@
 #control{
     display: block;
     position: absolute;
+    background-color: black;
     top: 50px;
     width: 249;
     height: 235;
