@@ -3,15 +3,12 @@
 var getImageData = function(imgtag, x, y)
 {
     var imgsrc = imgtag.src;
-    console.log(imgtag);
     
     var canvas = document.createElement("canvas");
     canvas.width = imgtag.width;
     canvas.height = imgtag.height;
-    console.log("canvas: ", canvas);
     
     var context = canvas.getContext('2d')
-    console.log("context: ", context);
     context.drawImage(imgtag, 0, 0);
     return context.getImageData(x, y, 1, 1);
 }
@@ -48,15 +45,8 @@ var isTransparentUnderMouse = function (event, element) {
 
     pixel_data = getImageData(imgtag, mx, my);
 
-    console.log(pixel_data);
-    console.log(pixel_data.data);
-
-    // pixel_data = getImageData(imgtag, 5, 5);
-
     // console.log(pixel_data);
     // console.log(pixel_data.data);
-    // console.log(pixel_data.data.byteLength)
-    // console.log(pixel_data.data.length);
     if(pixel_data.data[3])
         return false;
     return true;
@@ -73,9 +63,9 @@ function onControlClick()
         document.getElementById("turnoff"),
         document.getElementById("motorsoff"),
         // machine actions.
-        document.getElementById("link-homex"),
-        document.getElementById("link-homey"),
-        document.getElementById("link-homez"),
+        document.getElementById("homex"),
+        document.getElementById("homey"),
+        document.getElementById("homez"),
         document.getElementById("r"),
         document.getElementById("rr"),
         document.getElementById("rrr"),
@@ -107,8 +97,15 @@ function onControlClick()
         element_id.element = element_id
         element_id.onclick = function(e)
         {
-            if (isTransparentUnderMouse(e, this.element))
-                return false;
+            var target = e.target;
+            var tagname = target.tagName;
+            // for a image we check the underlying transparency.
+            // we don't wana react to that!
+            if(tagname === "IMG")
+            {
+                if (isTransparentUnderMouse(e, this.element))
+                    return false;
+            }
             // future send the actual commands to /action?this.name=1
             console.log(this.named);
             return false;
