@@ -162,6 +162,7 @@ void writeCol(uint8_t data, uint8_t col)
 {
     setCol(col);
     setRowData(data);
+    setRowData(0x00);
 }
 
 void setRowData(uint8_t data)
