@@ -2,30 +2,35 @@
 
 ESP8266WebServer server;
 
-static File uploadFile;
 static String html_root = "/html/";
 static String gcode_root = "/gcode/";
 
 void setupWebServer()
-{
-    Serial.println("Setting up Server.");
-    
+{   
     server.on("/", handleServerRoot);
     server.on("/SDFileMan", handleSDFileMan);
-    server.on("/uploadhtml", uploadHtml);
-    server.on("/uploadgcode", uploadGcode);
+    server.on("/uploadhtml", HTTP_GET, uploadHtml);
+    server.on("/uploadgcode", HTTP_GET, uploadGcode);
+    server.on("/upload", HTTP_POST, upload, handleFileUpload);
     server.on("/action", action);
     server.onFileUpload(handleFileUpload);
+    server.onNotFound(notFound);
 
     server.begin();
     Serial.println("HTTP Server started.");
+}
+
+void notFound()
+{
+    Serial.printf("server.uri: %s\n", server.uri().c_str());
+    server.send(200, "text/plain", "h");
 }
 
 String loadHtml(String path)
 {
     String content;
     File html;
-    Serial.printf("loading page from: %s\n", path.c_str());
+    // Serial.printf("loading page from: %s\n", path.c_str());
     html = SD.open(path, FILE_READ);
     if(html)
     {
@@ -57,60 +62,72 @@ void uploadGcode()
     server.send(200, "text/html", loadHtml("/html/upgcode.htm"));
 }
 
+void upload()
+{
+    Serial.println("Upload.");
+    server.sendHeader("Connection", "close");
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(200, "text/html", "<html><head><meta http-equiv=\"refresh\" content=\"0; url=/\" /></head></html>");
+}
+
+
+File uploadFile;
 void handleFileUpload()
 {
-    bool is_html_upload = (server.uri() == "/uploadhtml");
-    bool is_gcode_upload = (server.uri() == "/uploadgcode");
     static unsigned long int start;
-
-    // Serial.printf("server.uri() = %s\n", server.uri().c_str());
+        
+    // then handle the file uploading.
+    HTTPUpload& upload = server.upload();
     
-    if(is_html_upload || is_gcode_upload)
+    String root = "";
+    String fname = upload.filename;
+    fname.toLowerCase();
+    if(fname.endsWith(".g") || fname.endsWith(".gco") ||
+       fname.endsWith(".gcode"))
     {
-        // figure out where to put the file.
-        String root = "";
-        if(is_html_upload)
+        root = gcode_root;
+    }
+    else if(fname.endsWith(".htm") || fname.endsWith(".html"))
+    {
+        root = html_root;
+    }
+    else
+    {
+        return;
+    }
+
+    if(upload.status == UPLOAD_FILE_START)
+    {
+        start = millis();
+        String filepath = root + upload.filename;
+        if(SD.exists((char *)filepath.c_str()))
         {
-            root = html_root;
+            SD.remove((char *)filepath.c_str());
         }
-        if(is_gcode_upload)
+        uploadFile = SD.open((char *)filepath.c_str(), FILE_WRITE);
+        Serial.println("uploadfile");
+        Serial.print("Upload: START, filename: ");
+        Serial.println(filepath);
+    }
+    else if(upload.status == UPLOAD_FILE_WRITE)
+    {
+        if(uploadFile)
         {
-            root = gcode_root;
+            uploadFile.write(upload.buf, upload.currentSize);
+            uploadFile.flush();
+            Serial.print("Upload: WRITE, Bytes: ");
+            Serial.println(upload.currentSize);
         }
-        
-        // then handle the file uploading.
-        HTTPUpload& upload = server.upload();
-        
-        if(upload.status == UPLOAD_FILE_START)
+    }
+    else if(upload.status == UPLOAD_FILE_END)
+    {
+        if(uploadFile)
         {
-            start = millis();
-            String filepath = root + upload.filename;
-            if(SD.exists((char *)filepath.c_str()))
-            {
-                SD.remove((char *)filepath.c_str());
-            }
-            uploadFile = SD.open(filepath.c_str(), FILE_WRITE);
-            Serial.print("Upload: START, filename: ");
-            Serial.println(filepath);
+            uploadFile.close();
         }
-        else if(upload.status == UPLOAD_FILE_WRITE)
-        {
-            if(uploadFile)
-            {
-                uploadFile.write(upload.buf, upload.currentSize);
-                uploadFile.flush();
-            }
-        }
-        else if(upload.status == UPLOAD_FILE_END)
-        {
-            if(uploadFile)
-            {
-                uploadFile.close();
-            }
-            Serial.print("Upload: END, Size: ");
-            Serial.println(upload.totalSize);
-            Serial.printf("toke: %ld seconds\n", (millis() - start) / 1000);
-        }
+        Serial.print("Upload: END, Size: ");
+        Serial.println(upload.totalSize);
+        Serial.printf("toke: %ld seconds\n", (millis() - start) / 1000);
     }
 }
 

@@ -14,6 +14,8 @@ void returnOK();
 String loadFile(String path);
 void uploadHtml();
 void uploadGcode();
+void upload();
+void notFound();
 void handleFileUpload();
 void handleServerRoot();
 void handleSDFileMan();

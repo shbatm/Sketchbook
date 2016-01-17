@@ -27,6 +27,10 @@ static command_t commands[] =
         .handle = restart,
     },
     {
+        .name = String("storeSettings"),
+        .handle = storeSettings,
+    },
+    {
         .name = String("commands"),
         .handle = print_commands,
     }
@@ -362,6 +366,12 @@ void cat(int argc, String* argv)
         // close file after reading.
         file.close();
     }
+}
+
+extern void settingsStore();
+void storeSettings(int, String*)
+{
+    settingsStore();
 }
 
 // we need acces to the extern function setupWifi.

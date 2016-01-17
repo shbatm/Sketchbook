@@ -1,11 +1,9 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
-#include <EEPROM.h>
 #include <SPI.h>
 #include <SD.h>
 
+#include "ota.h"
 #include "cmd.h"
 #include "webserver.h"
 #include "settingsStore.h"
@@ -14,14 +12,12 @@ String board_name = "3Dprinter";
 String ssid = "ssid";
 String pass = "pass";
 
-int currentMode = WIFI_STA;
-
-#define ota ArduinoOTA
+WiFiMode currentMode = WIFI_STA;
 
 const int chipSelect = 4;
 bool hasSD = false;
 
-String modeToStr(int wifimode)
+String modeToStr(WiFiMode wifimode)
 {
     switch(wifimode)
     {
@@ -48,8 +44,8 @@ void settingsStore()
     storeString(ssid, addr);
     Serial.printf("pass: %s\n", pass.c_str());
     storeString(pass, addr);
-    Serial.printf("wifimode: %s\n", modeToStr(currentMode).c_str());
-    storeInt(currentMode, addr);
+    Serial.printf("wifimode: %s\n", modeToStr((WiFiMode)currentMode).c_str());
+    storeInt((int)currentMode, addr);
     storeDone();
     Serial.println();
 }
@@ -68,7 +64,7 @@ void settingsLoad()
         Serial.printf("ssid: %s\n", ssid.c_str());
         pass = loadString(addr);
         Serial.printf("pass: %s\n", pass.c_str());
-        currentMode = loadInt(addr);
+        currentMode = (WiFiMode)loadInt(addr);
         Serial.printf("wifimode: %s\n", modeToStr(currentMode).c_str());
         Serial.println();
     }
@@ -82,7 +78,7 @@ void settingsLoad()
 
 void setupWifi()
 {
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(currentMode);
     WiFi.disconnect();
     WiFi.begin(ssid.c_str(), pass.c_str());
     Serial.println("connecting");
@@ -104,35 +100,6 @@ void setupWifi()
     Serial.println("connected");
     Serial.print("IP: ");
     Serial.println(WiFi.localIP());
-}
-
-void setupOTA()
-{
-    ota.onStart([]()
-    {
-        Serial.println("Start");
-    });
-
-    ota.onEnd([]()
-    {
-        Serial.println("\nEnd");
-    });
-
-    ota.onProgress([](unsigned int progress, unsigned int total)
-    {
-        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    });
-
-    ota.onError([](ota_error_t error)
-    {
-        Serial.printf("Error[%u]: ", error);
-        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-        else if (error == OTA_END_ERROR) Serial.println("End Failed");
-    });
-    ota.begin();
 }
 
 void setupSD()

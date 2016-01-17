@@ -49,5 +49,8 @@ void print_commands(int, String*);
 // echo's everything you type back into the command prompt.
 void echo(int, String*);
 
+// store settings into flash
+void storeSettings(int, String*);
+
 
 #endif
