@@ -2,36 +2,101 @@
 
 ESP8266WebServer server;
 
-static String html_root = "/html/";
-static String gcode_root = "/gcode/";
+static String html_root = "/html";
+static String gcode_root = "/gcode";
 
 void setupWebServer()
 {   
-    server.on("/", handleServerRoot);
-    server.on("/SDFileMan", handleSDFileMan);
-    server.on("/uploadhtml", HTTP_GET, uploadHtml);
-    server.on("/uploadgcode", HTTP_GET, uploadGcode);
-    server.on("/upload", HTTP_POST, upload, handleFileUpload);
-    server.on("/action", action);
-    server.onFileUpload(handleFileUpload);
+    // server.on("/", handleServerRoot);
+    // server.on("/SDFileMan", handleSDFileMan);
+    // server.on("/uploadhtml", HTTP_GET, uploadHtml);
+    // server.on("/uploadgcode", HTTP_GET, uploadGcode);
+    // server.on("/upload", HTTP_POST, upload, handleFileUpload);
+    // server.on("/action", action);
+    // server.onFileUpload(handleFileUpload);
     server.onNotFound(notFound);
 
     server.begin();
     Serial.println("HTTP Server started.");
 }
 
-void notFound()
+String loadFile(String fpath)
 {
-    Serial.printf("server.uri: %s\n", server.uri().c_str());
-    server.send(200, "text/plain", "h");
+    String content;
+    File file = SD.open(fpath, FILE_READ);
+    if(file)
+    {
+        int data = '\0';
+        while(file.available())
+        {
+            content += (char)file.read();
+        }
+        file.close();
+        return content;
+    }
+
+    return String("Content not found at: ") + fpath;
 }
 
-String loadHtml(String path)
+void notFound()
+{
+    String dataType = "text/plain";
+    String path;
+    String uri = server.uri();
+
+    // check for root else it's just the path.
+    if(uri.endsWith("/"))
+    {
+        path = "/index.htm";
+        dataType = "text/html";
+    }
+    else
+    {
+        path = uri;
+    }
+
+    if(path.endsWith(".htm")) dataType = "text/html";
+    else if(path.endsWith(".css")) dataType = "text/css";
+    else if(path.endsWith(".js")) dataType = "application/javascript";
+    else if(path.endsWith(".png")) dataType = "image/png";
+    else if(path.endsWith(".gif")) dataType = "image/gif";
+    else if(path.endsWith(".jpg")) dataType = "image/jpeg";
+    else if(path.endsWith(".ico")) dataType = "image/x-icon";
+    else if(path.endsWith(".xml")) dataType = "text/xml";
+    else if(path.endsWith(".pdf")) dataType = "application/pdf";
+    else if(path.endsWith(".zip")) dataType = "application/zip";
+
+    Serial.println("");
+    Serial.printf("server.uri: %s\n", uri.c_str());
+    Serial.printf("dataType: %s\n", dataType.c_str());
+    Serial.printf("path: %s \n", String(html_root + path).c_str());
+    Serial.println("");
+
+    File datafile = SD.open(html_root + path.c_str());
+    if(datafile)
+    {
+        if(server.streamFile(datafile, dataType) != datafile.size())
+        {
+            Serial.println("Send size does not equal size on disk.");
+            Serial.printf("file: %s\n", path.c_str());
+        }
+        datafile.close();
+        return;
+    }
+    else
+    {
+        Serial.printf("couldn't find: %s\n", String(html_root + path).c_str());
+    }
+
+    server.send(200, dataType, "Content not found:" + path);
+}
+
+String loadHtml(String fpath)
 {
     String content;
     File html;
-    // Serial.printf("loading page from: %s\n", path.c_str());
-    html = SD.open(path, FILE_READ);
+    // Serial.printf("loading page from: %s\n", fpath.c_str());
+    html = SD.open(fpath, FILE_READ);
     if(html)
     {
         int data = '\0';
@@ -43,7 +108,7 @@ String loadHtml(String path)
     }
     else
     {
-        content = "<h6>" + path + " Content not found.</h6>";
+        content = "<h6>" + fpath + " Content not found.</h6>";
     }
     return content;
 }

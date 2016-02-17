@@ -7,7 +7,9 @@
 typedef struct {
     String name;
     void (*handle)(int, String*);
-} command_t;
+} command_t __attribute__ ((aligned (4)));
+
+void setupInterpreter();
 
 int getNumCommands();
 void setNumCommands(size_t);
@@ -42,15 +44,19 @@ void rm(int, String*);
 void mv(int, String*);
 // create a file or directory on the sd card.
 void touch(int, String*);
+// calculate statement in ()
+void calc(int, String*);
 // restarts esp after X amount of secconds.
 void restart(int, String*);
 // this prints the available commands
-void print_commands(int, String*);
+void printCommands(int, String*);
 // echo's everything you type back into the command prompt.
 void echo(int, String*);
 
 // store settings into flash
 void storeSettings(int, String*);
+// view heap
+void printHeap(int, String*);
 
 
 #endif

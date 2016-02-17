@@ -1,12 +1,17 @@
+#include <GDBStub.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <SPI.h>
 #include <SD.h>
+#include <SdFat.h>
+#include <SdFatUtil.h>
 
+#include "settings.h"
 #include "ota.h"
 #include "cmd.h"
 #include "webserver.h"
 #include "settingsStore.h"
+
 
 String board_name = "3Dprinter";
 String ssid = "ssid";
@@ -29,50 +34,6 @@ String modeToStr(WiFiMode wifimode)
             return String("WIFI_AP_STA");
         default:
             return String("no valid mode set");
-    }
-}
-
-void settingsStore()
-{
-    Serial.println();
-    Serial.println("storing: ");
-    int addr = 0;
-    storeMagicStr(addr);
-    Serial.printf("board_name: %s\n", board_name.c_str());
-    storeString(board_name, addr);
-    Serial.printf("ssid: %s\n", ssid.c_str());
-    storeString(ssid, addr);
-    Serial.printf("pass: %s\n", pass.c_str());
-    storeString(pass, addr);
-    Serial.printf("wifimode: %s\n", modeToStr((WiFiMode)currentMode).c_str());
-    storeInt((int)currentMode, addr);
-    storeDone();
-    Serial.println();
-}
-
-void settingsLoad()
-{
-    Serial.println();
-    Serial.println("loading: ");
-    int addr = 0;
-    if(magicStrPresent(addr))
-    {
-        Serial.println("valid settings!");
-        board_name = loadString(addr);
-        Serial.printf("board_name: %s\n", board_name.c_str());
-        ssid = loadString(addr);
-        Serial.printf("ssid: %s\n", ssid.c_str());
-        pass = loadString(addr);
-        Serial.printf("pass: %s\n", pass.c_str());
-        currentMode = (WiFiMode)loadInt(addr);
-        Serial.printf("wifimode: %s\n", modeToStr(currentMode).c_str());
-        Serial.println();
-    }
-    else
-    {
-        Serial.println("no valid settings!");
-        settingsStore();
-        Serial.println();
     }
 }
 
@@ -104,8 +65,10 @@ void setupWifi()
 
 void setupSD()
 {
+    Serial.println("setting up SD.");
     // check for a card.
-    if(!SD.begin(chipSelect))
+    // open at X MHz.
+    if(!SD.begin(chipSelect, 25e6))
     {
         Serial.println("sd card failed to begin library.");
         hasSD = false;
@@ -119,6 +82,7 @@ void setupSD()
 
 void setupNetworkServices()
 {
+    Serial.println();
     Serial.println("setting up wifi.");
     setupWifi();
     Serial.println("setup ota.");
@@ -127,17 +91,31 @@ void setupNetworkServices()
     setupWebServer();
 }
 
+void storeSettings()
+{
+    strcpy(settings.board_name, board_name.c_str());
+    strcpy(settings.ssid, ssid.c_str());
+    strcpy(settings.pass, pass.c_str());
+    storeStruct(&settings, sizeof(settings));
+}
+
+void loadSettings()
+{
+    loadStruct(&settings, sizeof(settings));
+    board_name = settings.board_name;
+    ssid = settings.ssid;
+    pass = settings.pass;
+}
+
 void setup()
 {
-    Serial.begin(115200);
-    Serial.println("");
-    EEPROM.begin(1024);
-    settingsLoad();
+    Serial.begin(576000);
+    Serial.println("\n");
 
-    Serial.println("setting up SD.");
+    loadSettings();
     setupSD();
-
     setupNetworkServices();
+    setupInterpreter();
 }
 
 void loop()

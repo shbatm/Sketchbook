@@ -11,7 +11,7 @@
 
 void setupWebServer();
 void returnOK();
-String loadFile(String path);
+String loadFile(String);
 void uploadHtml();
 void uploadGcode();
 void upload();

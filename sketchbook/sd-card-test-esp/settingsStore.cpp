@@ -103,3 +103,71 @@ int loadInt(int &addr)
   addr += i;
   return value;
 }
+
+void storeStruct(void *data_source, size_t size)
+{
+  EEPROM.begin(size * 2);
+  for(size_t i = 0; i < size; i++)
+  {
+    char data = ((char *)data_source)[i];
+    EEPROM.write(i, data);
+  }
+  EEPROM.commit();
+}
+
+void loadStruct(void *data_dest, size_t size)
+{
+    EEPROM.begin(size * 2);
+    for(size_t i = 0; i < size; i++)
+    {
+        char data = EEPROM.read(i);
+        ((char *)data_dest)[i] = data;
+    }
+}
+
+/* Testing
+
+
+void printCmpSettings(settings_t s1, settings_t s2)
+{
+    Serial.printf("board_name: %s | %s \n"
+                  "ssid: %s | %s \n"
+                  "pass: %s | %s \n",
+                  s1.board_name, s2.board_name,
+                  s1.ssid, s2.ssid,
+                  s1.pass, s2.pass
+                  );
+}
+
+void testStoreSettings()
+{
+    memcpy(&settings_original, &settings, sizeof(settings));
+    storeStruct(&settings, sizeof(settings));
+    loadStruct(&settings, sizeof(settings));
+    if(!memcmp(&settings_original, &settings, sizeof(settings)))
+    {
+        Serial.println("settings are the same!");
+        printCmpSettings(settings_original, settings);
+    }
+    else
+    {
+        Serial.println("settings are not the same!");
+        printCmpSettings(settings_original, settings);
+    }
+
+    memcpy(&settings_original, &settings, sizeof(settings));
+    strcpy(settings.board_name, "test_host");
+    storeStruct(&settings, sizeof(settings));
+    loadStruct(&settings, sizeof(settings));
+    if(!memcmp(&settings_original, &settings, sizeof(settings)))
+    {
+        Serial.println("settings are the same!");
+        printCmpSettings(settings_original, settings);
+    }
+    else
+    {
+        Serial.println("settings are not the same!");
+        printCmpSettings(settings_original, settings);
+    }
+}
+*/

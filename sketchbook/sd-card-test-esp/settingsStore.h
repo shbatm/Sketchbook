@@ -44,4 +44,8 @@ String loadString(int&);
 // load a int.
 int loadInt(int&);
 
+// store any struct
+void storeStruct(void*, size_t);
+void loadStruct(void*, size_t);
+
 #endif

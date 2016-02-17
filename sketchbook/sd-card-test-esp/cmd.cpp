@@ -3,7 +3,7 @@
 static command_t commands[] = 
 {
     {
-        .name = String("list"),
+        .name = String("ls"),
         .handle = listSd,
     },
     {
@@ -19,6 +19,14 @@ static command_t commands[] =
         .handle = mkdir,
     },
     {
+        .name = String("touch"),
+        .handle = touch,
+    },
+    {
+        .name = String("echo"),
+        .handle = echo,
+    },
+    {
         .name = String("sta"),
         .handle = setSTA,
     },
@@ -32,11 +40,24 @@ static command_t commands[] =
     },
     {
         .name = String("commands"),
-        .handle = print_commands,
+        .handle = printCommands,
+    },
+    {
+        .name = String("heap"),
+        .handle = printHeap,
+    },
+    {
+        .name = String("calc"),
+        .handle = calc,
     }
 };
 
 static int numCommands = sizeof(commands) / sizeof(command_t);
+
+void setupInterpreter()
+{
+    Serial.print("\n>> ");
+}
 
 int getNumCommands()
 {
@@ -60,10 +81,15 @@ void printArguments(int argc, String* argv)
     Serial.println();
 }
 
+void initInterpreter()
+{
+    Serial.print(">> ");
+}
+
 // returns input that is newline terminated.
 // returns string with 0 len if nothing found yet.
 // or not done yet receiving.
-String received;
+String received = "";
 String getInput()
 {
     // check if anything new available.
@@ -71,7 +97,7 @@ String getInput()
     {
         // read in that data.
         char data = Serial.read();
-        if(data == '\n')
+        if(data == '\n' || data == '\r')
         {
             // if end of line (marked with newline) is found.
             // return a copy and clear our own buffer.
@@ -93,25 +119,29 @@ String getInput()
 // and executes it.
 void interpretInput(String input)
 {
-    static const char delim[] = " ";
+    static char* str_input = NULL;
+    const char delim[] = " \n";
+    char *svptr = NULL;
     if(input.length())
     {
-        // print command to prompt.
-        Serial.println(">> " + input);
-        
-        // create a copy to be used with strtok.
-        char* str_input = (char *)malloc(sizeof(char) * input.length());
+        // create a copy to be used with strtok_r. free before if: it is used before.
+        if(str_input != NULL)
+        {
+            free(str_input);
+        }
+        size_t str_input_len = (sizeof(char) * input.length()) + 1;
+        str_input = (char *)malloc(str_input_len);
         if(str_input == NULL)
         {
             Serial.println("Input Copy Error.");
             return;
         }
+        memset(str_input, '\0', input.length());
         strcpy(str_input, input.c_str());
         // check for leading whitespace.
         if(isspace(str_input[0]))
         {
-            Serial.println("Syntax error");
-            free(str_input);
+            Serial.println("Unexpected White space.");
             return;
         }
         // trim trailing whitespace.
@@ -120,6 +150,7 @@ void interpretInput(String input)
         {
             str_input[len - 1] = '\0';
             len = strlen(str_input);
+            delay(0);
         }
 
         // strtok merges adjecent delimeters (white space in this case)
@@ -127,8 +158,7 @@ void interpretInput(String input)
         // how many white space we add between arguments.
         
         // first token is the actuall command.
-        String command = String(strtok(str_input, delim));
-        // Serial.println("command: " + command + " len: " + command.length());
+        char* command = strtok_r(str_input, delim, &svptr);
         
         // max allowed length of argv, thus max allowed arguments.
         static int argc;
@@ -137,20 +167,18 @@ void interpretInput(String input)
 
         // parse out all arguments for aslong as there are arguments.
         argc = 0;
-        char* argument = strtok(NULL, delim);
+        char* argument = strtok_r(NULL, delim, &svptr);
         while(argument != NULL)
         {
             // put the arguments in order in argv
             argv[argc] = String(argument);
-            // Serial.println("Argument: " + argv[argc] + " Len: " + argv[argc].length());
-            argument = strtok(NULL, delim);
+            argument = strtok_r(NULL, delim, &svptr);
             argc++;
             // keep track of where to put argument in argv.
             // and check if we are not exeeding max arguments.
             // also is length of argv thus argc.
-            if(argc == max_args)
+            if(argc >= max_args)
             {
-                free(str_input);
                 return;
             }
         }
@@ -159,19 +187,21 @@ void interpretInput(String input)
         // check for command in commands list. and call it's handler.
         for(int i = 0; i < numCommands;i++)
         {
-            if(command == commands[i].name)
+            if(String(command) == commands[i].name)
             {
                 // call that command handle
                 (commands[i].handle)(argc, argv);
-                free(str_input);
+                // print this to show the interactive interpreter is back
+                // to do our bidding!
+                Serial.print("\n>> ");
                 return;
             }
         }
 
         // if we reach here it's unkown input/command.
         Serial.println("unknown input: '" + input + "'");
-        free(str_input);
-    }
+        Serial.print(">> ");
+     }
 }
 
 void printFile(File file)
@@ -199,6 +229,11 @@ void printFile(File file)
     Serial.print(file_size, DEC);
     Serial.println(size_order);
 
+}
+
+void printHeap(int argc, String* argv)
+{
+    Serial.printf("heap: %d \n", ESP.getFreeHeap());
 }
 
 void printDirectory(File dir, int numTabs)
@@ -280,15 +315,25 @@ void mv(int argc, String* argv)
 
 void echo(int argc, String* argv)
 {
-    
+    for(int i = 0; i < argc; i++)
+    {
+        Serial.print(argv[i]);
+        Serial.print(" ");
+    }
+    Serial.println();
 }
 
-void print_commands(int argc, String* argv)
+void calc(int argc, String* argv)
+{
+
+}
+
+void printCommands(int argc, String* argv)
 {
     Serial.println("Commands Available: ");
     for(int i = 0; i < numCommands; i++)
     {
-        Serial.printf("--> %s\n", commands[i].name.c_str());
+        Serial.printf("--> %s\n", (const char *)commands[i].name.c_str());
     }
 }
 
@@ -368,15 +413,19 @@ void cat(int argc, String* argv)
     }
 }
 
-extern void settingsStore();
+extern void setup();
+extern void storeSettings();
 void storeSettings(int, String*)
 {
-    settingsStore();
+    // store settings.
+    storeSettings();
+    // restart network services
+    setup();
 }
 
 // we need acces to the extern function setupWifi.
-extern void setupNetworkServices();
-extern void settingsStore();
+extern void setup();
+extern void storeSettings();
 extern String ssid;
 extern String pass;
 extern String board_name;
@@ -392,9 +441,9 @@ void setSTA(int argc, String* argv)
             board_name = argv[2];
         }
         // store settings.
-        settingsStore();
+        storeSettings();
         // restart network services
-        setupNetworkServices();
+        setup();
     }
     else
     {
@@ -404,15 +453,11 @@ void setSTA(int argc, String* argv)
 
 void restart(int argc, String* argv)
 {
-
-    if(argc == 1)
+    int wait = 0;
+    if(argc)
     {
-        int wait = argv[0].toInt();
-        delay(wait);
-        ESP.restart();
+        wait = argv[0].toInt();
     }
-    else
-    {
-        ESP.restart();
-    }
+    delay(wait);
+    ESP.restart();
 }
