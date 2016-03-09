@@ -1,29 +1,53 @@
 #include <MIDI.h>
+#include "types.h"
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
-// #define ENABLESERIAL true
-#define ENABLESERIAL true
+// uint16_t matrix[12 * 8] = {};
+// uint16_t matrix_old[12 * 8] = {};
+#define NUMROWS  8
+#define NUMCOLS  12
+uint16_t matrix[NUMROWS][NUMCOLS];
+uint16_t matrix_old[NUMROWS][NUMCOLS];
 
-uint16_t matrix[12 * 8] = {};
-uint16_t matrix_old[12 * 8] = {};
+#define PIANOKEYSTART 29
+#define NUMKEYS 88
+#define OVERLAYSIZE 8
+#define OVERLAYSTART 44
+uint8_t pianokey_map[NUMROWS][NUMCOLS]
+{
+    {8, 9, 10, 11, 0, 1, 2, 3, 16, 17, 18, 19},
+    {20, 21, 22, 23, 12, 13, 14, 15, 28, 29, 30, 31},
+    {32, 33, 34, 35, 24, 25, 26, 27, 40, 41, 42, 43},
+    {44, 45, 46, 47, 36, 37, 38, 39, 56, 57, 58, 59},
+
+    {48, 49, 50, 51, 64, 65, 66, 67, 68, 69, 70, 71},
+    {60, 61, 62, 63, 76, 77, 78, 79, 80, 81, 82, 83},
+    {72, 73, 74, 75, 88, 89, 90, 91, 92, 93, 94, 95},
+    {84, 85, 86, 87, 0,  0,  0,  0,  0,  0,  0,  0},
+};
+
+uint8_t notes[NUMROWS * NUMCOLS];
 
 static char printbuff[100];
 
-typedef struct Pinstate
+timed_t scan_timer
 {
-    public:
-    uint8_t index;
-    uint16_t id;
-    uint16_t state;
-    uint16_t old_state;
-    uint8_t timeout;
-    uint8_t timeout_done;
-    uint8_t timeout_set;
-    int previous_time;
+    .previous = 0,
+    .current = 0,
+    .interval = 10000
 };
 
-Pinstate pins[12 * 8];
+bool check_timed(timed_t *timed)
+{
+    timed->current = micros();
+    if((timed->current - timed->previous) >= timed->interval)
+    {
+        timed->previous = timed->current;
+        return true;
+    }
+    return false;
+}
 
 void print_binary(uint32_t num, size_t len)
 {
@@ -36,6 +60,91 @@ void print_binary(uint32_t num, size_t len)
         else
         {
             Serial.print('0');
+        }
+    }
+}
+
+void setRow(uint8_t row)
+{
+    // keep 4 first bits and or in the row.
+    if(row < 4)
+    {
+        PORTB = (1 << row);
+        PORTK &= 0x0F;
+    }
+    else
+    {
+        PORTK = (PORTK & 0x0F) | (1 << (row));
+        PORTB &= 0xF0;
+    }
+}
+
+uint16_t readCol()
+{
+    return (PINF << 4) | (PINK & 0x0F);
+}
+
+void generate_keymap()
+{
+    uint8_t mapped;
+    uint8_t index = 0;
+    for(int row = 0; row < NUMROWS; row++)
+    {
+        for(int col = 0; col < NUMCOLS; col++)
+        {
+            if(index >= NUMKEYS)
+                return;
+            mapped = pianokey_map[row][col];
+            if(index >= OVERLAYSTART)
+            {
+                notes[mapped] = PIANOKEYSTART + index - OVERLAYSIZE;
+            }
+            else
+            {
+                notes[mapped] = PIANOKEYSTART + index;
+            }
+            index++;
+        }
+    }
+
+}
+
+void handle_keys()
+{
+    static uint16_t data;
+    static uint8_t note;
+    static uint8_t index;
+
+    if(check_timed(&scan_timer))
+    {
+        uint8_t index = 0;
+        for(int row = 0; row < NUMROWS; row++)
+        {
+            setRow(row);
+            data = readCol();
+            for(int col = 0; col < NUMCOLS; col++)
+            {
+                // store the new reading;
+                matrix[row][col] = data & (1 << col);
+
+                // compare to old reading if new > old then it's pressed.
+                if(matrix[row][col] > matrix_old[row][col])
+                {
+                    note = notes[index];
+                    MIDI.sendNoteOn(note, 127, 1);
+                }
+                // else if we compare and new < old then it's released.
+                if(matrix[row][col] < matrix_old[row][col])
+                {
+                    note = notes[index];
+                    MIDI.sendNoteOff(note, 127, 1);
+                    // Serial.println("released");
+                }
+
+                // store the new read value as old. 
+                matrix_old[row][col] = matrix[row][col];
+                index++;
+            }
         }
     }
 }
@@ -63,97 +172,13 @@ void setup()
     pinMode(52,  OUTPUT);
     pinMode(51,  OUTPUT);
     pinMode(50,  OUTPUT);
-    
-    MIDI.begin(1);
+
     // Serial.begin(115200);
-
-    int index = 0;
-    for(int row = 0; row < 8; row++)
-    {
-        for(int col = 0; col < 12; col++)
-        {
-            Pinstate *pin = &pins[index];
-            pin->id = (1 << col) + row;
-            pin->index = index;
-            pin->state = 0;
-            pin->old_state = 0;
-
-            pin->timeout = 50;
-            pin->timeout_done = true;
-            pin->timeout_set = false;
-
-            pin->previous_time = 0;
-        }
-    }
-}
-
-void setRow(uint8_t row)
-{
-    // keep 4 first bits and or in the row.
-    if(row < 4)
-    {
-        PORTB = (1 << row);
-        PORTK &= 0x0F;
-    }
-    else
-    {
-        PORTK = (PORTK & 0x0F) | (1 << (row));
-        PORTB &= 0xF0;
-    }
-}
-
-uint16_t readCol()
-{
-    return (PINF << 4) | (PINK & 0x0F);
-}
-
-void debugprint()
-{
-    // if(ENABLESERIAL)
-    // {
-    //     // print_binary(midinum, sizeof(midinum));
-    //     Serial.print("octave: ");
-    //     Serial.print(midinum);
-    //     if(midinum < 10)
-    //         Serial.print(" ");
-    //     if(midinum < 100)
-    //         Serial.print(" ");
-    //     print_binary(1 << i, 8);
-    //     Serial.print(" ");
-    //     print_binary(readCol(), 12);
-    //     // print_binary(PINF, 8);
-    //     // print_binary(PINK & 0x0F, 4);
-    //     Serial.println();
-    //     delay(10);   
-    // }
+    generate_keymap();
+    MIDI.begin(1);
 }
 
 void loop()
 {
-    // int index = 0;
-    // for(int row = 0; row < 8; row++)
-    // {
-    //     for(int col = 0; col < 8; col++);
-    // }
-
-    for(int row = 0; row < 8; row++)
-    {
-        setRow(row);
-        matrix[row] = readCol();
-    }
-    for(int i = 0; i < 8; i++)
-    {
-        if(matrix[i] > matrix_old[i])
-            MIDI.sendNoteOn(i+48, 127, 1);
-            // Serial.println("pressed");
-        if(matrix[i] < matrix_old[i])
-            MIDI.sendNoteOff(i+48, 127, 1);
-            // Serial.println("released");
-    }
-    for(int i = 0; i < 8; i++)
-    {
-        matrix_old[i] = matrix[i];
-        matrix[i] = 0;
-    }
-    delay(10);
+    handle_keys();
 }
