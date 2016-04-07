@@ -35,7 +35,7 @@ timed_t scan_timer
 {
     .previous = 0,
     .current = 0,
-    .interval = 10000
+    .interval = 1000
 };
 
 bool check_timed(timed_t *timed)
@@ -115,9 +115,9 @@ void handle_keys()
     static uint8_t note;
     static uint8_t index;
 
-    if(check_timed(&scan_timer))
-    {
-        uint8_t index = 0;
+    // if(check_timed(&scan_timer))
+    // {
+        index = 0;
         for(int row = 0; row < NUMROWS; row++)
         {
             setRow(row);
@@ -145,8 +145,9 @@ void handle_keys()
                 matrix_old[row][col] = matrix[row][col];
                 index++;
             }
+            delay(8);
         }
-    }
+    // }
 }
 
 void setup()
@@ -173,7 +174,7 @@ void setup()
     pinMode(51,  OUTPUT);
     pinMode(50,  OUTPUT);
 
-    // Serial.begin(115200);
+    Serial.begin(115200);
     generate_keymap();
     MIDI.begin(1);
 }
