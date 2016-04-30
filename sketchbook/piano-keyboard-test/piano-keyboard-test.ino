@@ -115,42 +115,46 @@ void handle_keys()
     static uint8_t note;
     static uint8_t index;
 
-    // if(check_timed(&scan_timer))
-    // {
-        index = 0;
-        for(int row = 0; row < NUMROWS; row++)
+    index = 0;
+    for(int row = 0; row < NUMROWS; row++)
+    {
+        // setRow(row);
+        // delay(5);
+        // data = readCol();
+
+        // above is what it used to be.
+        // below is a test. read first then inc.
+        // instead of inc then read. since inc and read would be
+        // pretty close to each other.
+        data = readCol();
+        setRow(row);
+        for(int col = 0; col < NUMCOLS; col++)
         {
-            setRow(row);
-            data = readCol();
-            for(int col = 0; col < NUMCOLS; col++)
+            // store the new reading;
+            matrix[row][col] = data & (1 << col);
+
+            // compare to old reading if new > old then it's pressed.
+            if(matrix[row][col] > matrix_old[row][col])
             {
-                // store the new reading;
-                matrix[row][col] = data & (1 << col);
-
-                // compare to old reading if new > old then it's pressed.
-                if(matrix[row][col] > matrix_old[row][col])
-                {
-                    note = notes[index];
-                    MIDI.sendNoteOn(note, 127, 1);
-                }
-                // else if we compare and new < old then it's released.
-                if(matrix[row][col] < matrix_old[row][col])
-                {
-                    note = notes[index];
-                    MIDI.sendNoteOff(note, 127, 1);
-                    // Serial.println("released");
-                }
-
-                // store the new read value as old. 
-                matrix_old[row][col] = matrix[row][col];
-                index++;
+                note = notes[index];
+                MIDI.sendNoteOn(note, 127, 1);
             }
-            delay(8);
+            // else if we compare and new < old then it's released.
+            if(matrix[row][col] < matrix_old[row][col])
+            {
+                note = notes[index];
+                MIDI.sendNoteOff(note, 127, 1);
+                // Serial.println("released");
+            }
+
+            // store the new read value as old. 
+            matrix_old[row][col] = matrix[row][col];
+            index++;
         }
-    // }
+    }
 }
 
-void setup()
+void setup_keyboard_scanning()
 {
     pinMode(A0, INPUT);
     pinMode(A1, INPUT);
@@ -174,9 +178,18 @@ void setup()
     pinMode(51,  OUTPUT);
     pinMode(50,  OUTPUT);
 
+    setRow(0);
+    delay(10);
+}
+
+void setup()
+{
+    setup_keyboard_scanning();
     Serial.begin(115200);
     generate_keymap();
     MIDI.begin(1);
+
+
 }
 
 void loop()
