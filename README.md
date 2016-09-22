@@ -1,4 +1,0 @@
-Sketchbook
-==========
-
-Arduino Sketchbook
